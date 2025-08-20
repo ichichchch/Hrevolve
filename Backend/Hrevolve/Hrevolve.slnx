@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../Entities/Entities.csproj" />
+  <Project Path="Hrevolve.csproj" />
+</Solution>
