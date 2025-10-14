@@ -1,10 +1,11 @@
 <Solution>
-  <Project Path="../Bots/Bots.csproj" />
-  <Project Path="../Clients/Clients.csproj" Id="2402ea51-88eb-4241-b110-1fa38103d6f3" />
-  <Project Path="../Commonds/Commons.csproj" />
-  <Project Path="../Entities/Entities.csproj" />
+  <Project Path="../Bots/Hrevolve.Bots.csproj" />
+  <Project Path="../Clients/Hrevolve.Infrastructure.csproj" Id="2402ea51-88eb-4241-b110-1fa38103d6f3" />
+  <Project Path="../Commonds/Hrevolve.Shared.csproj" />
+  <Project Path="../Core/Hrevolve.Core.csproj" Id="aa4025b0-6168-4cf3-8eae-a3542ddcd45d" />
+  <Project Path="../Entities/Hrevolve.Domain.csproj" />
   <Project Path="../Implements/Implements.csproj" />
   <Project Path="../Interfaces/Interfaces.csproj" />
-  <Project Path="../Models/Models.csproj" />
-  <Project Path="Hrevolve.csproj" />
+  <Project Path="../Models/Hrevolve.Application.csproj" />
+  <Project Path="Hrevolve.Web.csproj" />
 </Solution>
