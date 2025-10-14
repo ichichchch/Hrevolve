@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="../Bots/Bots.csproj" />
+  <Project Path="../Clients/Clients.csproj" Id="2402ea51-88eb-4241-b110-1fa38103d6f3" />
   <Project Path="../Commonds/Commons.csproj" />
   <Project Path="../Entities/Entities.csproj" />
   <Project Path="../Implements/Implements.csproj" />

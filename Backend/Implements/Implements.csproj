@@ -11,6 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Bots\Bots.csproj" />
+    <ProjectReference Include="..\Clients\Clients.csproj" />
     <ProjectReference Include="..\Commonds\Commons.csproj" />
     <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
   </ItemGroup>

@@ -17,6 +17,7 @@
   <ItemGroup>
     <Folder Include="Admin\" />
     <Folder Include="User\" />
+    <Folder Include="Agent\" />
   </ItemGroup>
 
 </Project>
