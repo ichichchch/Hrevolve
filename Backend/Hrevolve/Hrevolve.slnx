@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="../Bots/Hrevolve.Bots.csproj" />
+  <Project Path="../Bots/Hrevolve.Agents.csproj" />
   <Project Path="../Clients/Hrevolve.Infrastructure.csproj" Id="2402ea51-88eb-4241-b110-1fa38103d6f3" />
   <Project Path="../Commonds/Hrevolve.Shared.csproj" />
   <Project Path="../Core/Hrevolve.Core.csproj" Id="aa4025b0-6168-4cf3-8eae-a3542ddcd45d" />
