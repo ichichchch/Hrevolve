@@ -26,10 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Implements\Implements.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Controllers\Admin\" />
     <Folder Include="Controllers\User\" />
   </ItemGroup>

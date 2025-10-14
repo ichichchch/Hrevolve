@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="Implements\Admin\" />
-    <Folder Include="Interfaces\" />
   </ItemGroup>
 
 </Project>

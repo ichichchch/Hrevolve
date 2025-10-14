@@ -4,8 +4,6 @@
   <Project Path="../Commonds/Hrevolve.Shared.csproj" />
   <Project Path="../Core/Hrevolve.Core.csproj" Id="aa4025b0-6168-4cf3-8eae-a3542ddcd45d" />
   <Project Path="../Entities/Hrevolve.Domain.csproj" />
-  <Project Path="../Implements/Implements.csproj" />
-  <Project Path="../Interfaces/Interfaces.csproj" />
   <Project Path="../Models/Hrevolve.Application.csproj" />
   <Project Path="Hrevolve.Web.csproj" />
 </Solution>
