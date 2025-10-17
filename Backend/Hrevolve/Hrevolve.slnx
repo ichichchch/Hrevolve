@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="Hrevolve.Agent/Hrevolve.Agent.csproj" />
+  <Project Path="Hrevolve.Application/Hrevolve.Application.csproj" />
+  <Project Path="Hrevolve.Domain/Hrevolve.Domain.csproj" />
+  <Project Path="Hrevolve.Infrastructure/Hrevolve.Infrastructure.csproj" />
+  <Project Path="Hrevolve.Shared/Hrevolve.Shared.csproj" />
+  <Project Path="Hrevolve/Hrevolve.Web.csproj" />
+</Solution>
