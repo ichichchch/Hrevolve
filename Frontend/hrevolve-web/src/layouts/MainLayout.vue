@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, markRaw } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
@@ -19,6 +19,10 @@ import {
   Fold,
   Setting,
   SwitchButton,
+  Wallet,
+  FirstAidKit,
+  Document,
+  Tools,
 } from '@element-plus/icons-vue';
 
 const router = useRouter();
@@ -43,17 +47,17 @@ onMounted(async () => {
   }
 });
 
-// 菜单配置
+// 菜单配置 - 使用 markRaw 包裹图标组件避免响应式转换
 const menuItems = computed(() => [
   {
     index: '/',
     title: t('menu.dashboard'),
-    icon: HomeFilled,
+    icon: markRaw(HomeFilled),
   },
   {
     index: '/self-service',
     title: t('menu.selfService'),
-    icon: User,
+    icon: markRaw(User),
     children: [
       { index: '/self-service/profile', title: t('menu.profile') },
       { index: '/self-service/attendance', title: t('menu.myAttendance') },
@@ -64,12 +68,12 @@ const menuItems = computed(() => [
   {
     index: '/assistant',
     title: t('menu.assistant'),
-    icon: ChatDotRound,
+    icon: markRaw(ChatDotRound),
   },
   {
     index: '/organization',
     title: t('menu.organization'),
-    icon: OfficeBuilding,
+    icon: markRaw(OfficeBuilding),
     permission: 'organization:read',
     children: [
       { index: '/organization/structure', title: t('menu.orgStructure') },
@@ -79,13 +83,13 @@ const menuItems = computed(() => [
   {
     index: '/employees',
     title: t('menu.employees'),
-    icon: UserFilled,
+    icon: markRaw(UserFilled),
     permission: 'employee:read',
   },
   {
     index: '/attendance',
     title: t('menu.attendance'),
-    icon: Clock,
+    icon: markRaw(Clock),
     permission: 'attendance:read',
     children: [
       { index: '/attendance/records', title: t('menu.attendanceRecords') },
@@ -95,7 +99,7 @@ const menuItems = computed(() => [
   {
     index: '/leave',
     title: t('menu.leave'),
-    icon: Calendar,
+    icon: markRaw(Calendar),
     permission: 'leave:read',
     children: [
       { index: '/leave/requests', title: t('menu.leaveRequests') },
@@ -106,19 +110,92 @@ const menuItems = computed(() => [
   {
     index: '/payroll',
     title: t('menu.payroll'),
-    icon: Money,
+    icon: markRaw(Money),
     permission: 'payroll:read',
     children: [
       { index: '/payroll/records', title: t('menu.payrollRecords') },
       { index: '/payroll/periods', title: t('menu.payrollPeriods') },
     ],
   },
+  {
+    index: '/company',
+    title: t('menu.company') || '公司设置',
+    icon: markRaw(Setting),
+    permission: 'settings:read',
+    children: [
+      { index: '/company/tenant', title: t('menu.companyInfo') || '公司信息' },
+      { index: '/company/cost-centers', title: t('menu.costCenters') || '成本中心' },
+      { index: '/company/tags', title: t('menu.tags') || '标签管理' },
+      { index: '/company/clock-devices', title: t('menu.clockDevices') || '打卡设备' },
+      { index: '/company/users', title: t('menu.users') || '用户管理' },
+    ],
+  },
+  {
+    index: '/schedule',
+    title: t('menu.schedule') || '排班管理',
+    icon: markRaw(Calendar),
+    permission: 'attendance:read',
+    children: [
+      { index: '/schedule/overview', title: t('menu.scheduleOverview') || '排班概览' },
+      { index: '/schedule/table', title: t('menu.scheduleTable') || '排班表' },
+      { index: '/schedule/templates', title: t('menu.shiftTemplates') || '班次模板' },
+      { index: '/schedule/calendar', title: t('menu.scheduleCalendar') || '排班日历' },
+    ],
+  },
+  {
+    index: '/expense',
+    title: t('menu.expense') || '报销管理',
+    icon: markRaw(Wallet),
+    permission: 'expense:read',
+    children: [
+      { index: '/expense/requests', title: t('menu.expenseRequests') || '报销申请' },
+      { index: '/expense/types', title: t('menu.expenseTypes') || '报销类型' },
+    ],
+  },
+  {
+    index: '/insurance',
+    title: t('menu.insurance') || '保险福利',
+    icon: markRaw(FirstAidKit),
+    permission: 'payroll:read',
+    children: [
+      { index: '/insurance/overview', title: t('menu.insuranceOverview') || '概览' },
+      { index: '/insurance/plans', title: t('menu.insurancePlans') || '保险方案' },
+      { index: '/insurance/employees', title: t('menu.employeeInsurance') || '员工参保' },
+      { index: '/insurance/benefits', title: t('menu.benefits') || '福利项目' },
+    ],
+  },
+  {
+    index: '/tax',
+    title: t('menu.tax') || '报税管理',
+    icon: markRaw(Document),
+    permission: 'payroll:read',
+    children: [
+      { index: '/tax/profiles', title: t('menu.taxProfiles') || '税务档案' },
+      { index: '/tax/records', title: t('menu.taxRecords') || '报税记录' },
+      { index: '/tax/settings', title: t('menu.taxSettings') || '税务设置' },
+    ],
+  },
+  {
+    index: '/settings',
+    title: t('menu.settings') || '系统设置',
+    icon: markRaw(Tools),
+    permission: 'settings:read',
+    children: [
+      { index: '/settings/configs', title: t('menu.systemConfigs') || '系统配置' },
+      { index: '/settings/roles', title: t('menu.roles') || '角色管理' },
+      { index: '/settings/approval-flows', title: t('menu.approvalFlows') || '审批流程' },
+      { index: '/settings/audit-logs', title: t('menu.auditLogs') || '审计日志' },
+    ],
+  },
 ]);
 
 // 过滤有权限的菜单
+// 注意：开发环境暂时显示所有菜单，生产环境需要恢复权限检查
 const filteredMenuItems = computed(() => {
   return menuItems.value.filter((item) => {
     if (!item.permission) return true;
+    // 开发模式下显示所有菜单
+    if (import.meta.env.DEV) return true;
     return authStore.hasPermission(item.permission);
   });
 });

@@ -24,6 +24,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'self-service',
         name: 'SelfService',
+        redirect: '/self-service/profile',
         meta: { title: '员工自助', icon: 'User' },
         children: [
           {
@@ -63,6 +64,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'organization',
         name: 'Organization',
+        redirect: '/organization/structure',
         meta: { title: '组织管理', icon: 'OfficeBuilding', permission: 'organization:read' },
         children: [
           {
@@ -83,6 +85,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'employees',
         name: 'Employees',
+        redirect: '/employees',
         meta: { title: '员工管理', icon: 'UserFilled', permission: 'employee:read' },
         children: [
           {
@@ -103,6 +106,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'attendance',
         name: 'Attendance',
+        redirect: '/attendance/records',
         meta: { title: '考勤管理', icon: 'Clock', permission: 'attendance:read' },
         children: [
           {
@@ -123,6 +127,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'leave',
         name: 'Leave',
+        redirect: '/leave/requests',
         meta: { title: '假期管理', icon: 'Calendar', permission: 'leave:read' },
         children: [
           {
@@ -149,6 +154,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'payroll',
         name: 'Payroll',
+        redirect: '/payroll/records',
         meta: { title: '薪酬管理', icon: 'Money', permission: 'payroll:read' },
         children: [
           {
@@ -162,6 +168,192 @@ const routes: RouteRecordRaw[] = [
             name: 'PayrollPeriods',
             component: () => import('@/views/payroll/PeriodsView.vue'),
             meta: { title: '薪资周期' },
+          },
+        ],
+      },
+      // 公司设置
+      {
+        path: 'company',
+        name: 'Company',
+        redirect: '/company/tenant',
+        meta: { title: '公司设置', icon: 'Setting', permission: 'settings:read' },
+        children: [
+          {
+            path: 'tenant',
+            name: 'CompanyTenant',
+            component: () => import('@/views/company/TenantView.vue'),
+            meta: { title: '公司信息' },
+          },
+          {
+            path: 'cost-centers',
+            name: 'CostCenters',
+            component: () => import('@/views/company/CostCentersView.vue'),
+            meta: { title: '成本中心' },
+          },
+          {
+            path: 'tags',
+            name: 'Tags',
+            component: () => import('@/views/company/TagsView.vue'),
+            meta: { title: '标签管理' },
+          },
+          {
+            path: 'clock-devices',
+            name: 'ClockDevices',
+            component: () => import('@/views/company/ClockDevicesView.vue'),
+            meta: { title: '打卡设备' },
+          },
+          {
+            path: 'users',
+            name: 'CompanyUsers',
+            component: () => import('@/views/company/UsersView.vue'),
+            meta: { title: '用户管理' },
+          },
+        ],
+      },
+      // 排班管理
+      {
+        path: 'schedule',
+        name: 'Schedule',
+        redirect: '/schedule/overview',
+        meta: { title: '排班管理', icon: 'Calendar', permission: 'attendance:read' },
+        children: [
+          {
+            path: 'overview',
+            name: 'ScheduleOverview',
+            component: () => import('@/views/schedule/OverviewView.vue'),
+            meta: { title: '排班概览' },
+          },
+          {
+            path: 'table',
+            name: 'ScheduleTable',
+            component: () => import('@/views/schedule/ScheduleTableView.vue'),
+            meta: { title: '排班表' },
+          },
+          {
+            path: 'templates',
+            name: 'ShiftTemplates',
+            component: () => import('@/views/schedule/ShiftTemplatesView.vue'),
+            meta: { title: '班次模板' },
+          },
+          {
+            path: 'calendar',
+            name: 'ScheduleCalendar',
+            component: () => import('@/views/schedule/CalendarView.vue'),
+            meta: { title: '排班日历' },
+          },
+        ],
+      },
+      // 报销管理
+      {
+        path: 'expense',
+        name: 'Expense',
+        redirect: '/expense/requests',
+        meta: { title: '报销管理', icon: 'Wallet', permission: 'expense:read' },
+        children: [
+          {
+            path: 'requests',
+            name: 'ExpenseRequests',
+            component: () => import('@/views/expense/RequestsView.vue'),
+            meta: { title: '报销申请' },
+          },
+          {
+            path: 'types',
+            name: 'ExpenseTypes',
+            component: () => import('@/views/expense/TypesView.vue'),
+            meta: { title: '报销类型' },
+          },
+        ],
+      },
+      // 保险福利
+      {
+        path: 'insurance',
+        name: 'Insurance',
+        redirect: '/insurance/overview',
+        meta: { title: '保险福利', icon: 'FirstAidKit', permission: 'payroll:read' },
+        children: [
+          {
+            path: 'overview',
+            name: 'InsuranceOverview',
+            component: () => import('@/views/insurance/OverviewView.vue'),
+            meta: { title: '概览' },
+          },
+          {
+            path: 'plans',
+            name: 'InsurancePlans',
+            component: () => import('@/views/insurance/PlansView.vue'),
+            meta: { title: '保险方案' },
+          },
+          {
+            path: 'employees',
+            name: 'EmployeeInsurance',
+            component: () => import('@/views/insurance/EmployeeInsuranceView.vue'),
+            meta: { title: '员工参保' },
+          },
+          {
+            path: 'benefits',
+            name: 'Benefits',
+            component: () => import('@/views/insurance/BenefitsView.vue'),
+            meta: { title: '福利项目' },
+          },
+        ],
+      },
+      // 报税管理
+      {
+        path: 'tax',
+        name: 'Tax',
+        redirect: '/tax/profiles',
+        meta: { title: '报税管理', icon: 'Document', permission: 'payroll:read' },
+        children: [
+          {
+            path: 'profiles',
+            name: 'TaxProfiles',
+            component: () => import('@/views/tax/ProfilesView.vue'),
+            meta: { title: '税务档案' },
+          },
+          {
+            path: 'records',
+            name: 'TaxRecords',
+            component: () => import('@/views/tax/RecordsView.vue'),
+            meta: { title: '报税记录' },
+          },
+          {
+            path: 'settings',
+            name: 'TaxSettings',
+            component: () => import('@/views/tax/SettingsView.vue'),
+            meta: { title: '税务设置' },
+          },
+        ],
+      },
+      // 系统设置
+      {
+        path: 'settings',
+        name: 'Settings',
+        redirect: '/settings/configs',
+        meta: { title: '系统设置', icon: 'Tools', permission: 'settings:read' },
+        children: [
+          {
+            path: 'configs',
+            name: 'SystemConfigs',
+            component: () => import('@/views/settings/ConfigsView.vue'),
+            meta: { title: '系统配置' },
+          },
+          {
+            path: 'roles',
+            name: 'Roles',
+            component: () => import('@/views/settings/RolesView.vue'),
+            meta: { title: '角色管理' },
+          },
+          {
+            path: 'approval-flows',
+            name: 'ApprovalFlows',
+            component: () => import('@/views/settings/ApprovalFlowsView.vue'),
+            meta: { title: '审批流程' },
+          },
+          {
+            path: 'audit-logs',
+            name: 'AuditLogs',
+            component: () => import('@/views/settings/AuditLogsView.vue'),
+            meta: { title: '审计日志' },
           },
         ],
       },
@@ -209,11 +401,13 @@ router.beforeEach(async (to, _from, next) => {
     await authStore.fetchUser();
   }
   
-  // 检查权限
+  // 检查权限 - 开发环境跳过权限检查
   const requiredPermission = to.meta.permission as string | undefined;
-  if (requiredPermission && !authStore.hasPermission(requiredPermission)) {
-    next({ name: 'Dashboard' });
-    return;
+  if (requiredPermission && !import.meta.env.DEV) {
+    if (!authStore.hasPermission(requiredPermission)) {
+      next({ name: 'Dashboard' });
+      return;
+    }
   }
   
   next();

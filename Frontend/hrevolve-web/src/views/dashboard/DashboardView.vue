@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, shallowRef, markRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import {
@@ -14,12 +14,12 @@ const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 
-// 统计卡片数据
-const stats = ref([
-  { title: t('dashboard.todayAttendance'), value: '--', icon: Clock, color: '#D4AF37' },
-  { title: t('dashboard.leaveBalance'), value: '--', icon: Calendar, color: '#52c41a' },
-  { title: t('dashboard.pendingApprovals'), value: '3', icon: Document, color: '#faad14' },
-  { title: t('dashboard.teamMembers'), value: '12', icon: User, color: '#722ed1' },
+// 统计卡片数据 - 使用 shallowRef 避免深度响应式转换组件
+const stats = shallowRef([
+  { title: t('dashboard.todayAttendance'), value: '--', icon: markRaw(Clock), color: '#D4AF37' },
+  { title: t('dashboard.leaveBalance'), value: '--', icon: markRaw(Calendar), color: '#52c41a' },
+  { title: t('dashboard.pendingApprovals'), value: '3', icon: markRaw(Document), color: '#faad14' },
+  { title: t('dashboard.teamMembers'), value: '12', icon: markRaw(User), color: '#722ed1' },
 ]);
 </script>
 

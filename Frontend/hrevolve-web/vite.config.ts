@@ -13,8 +13,9 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:5224',
+        target: 'https://localhost:5225',
         changeOrigin: true,
+        secure: false, // 允许自签名证书
       },
     },
   },
