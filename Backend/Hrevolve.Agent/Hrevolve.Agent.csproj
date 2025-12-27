@@ -1,9 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Microsoft Agent Framework - 下一代AI Agent框架（当前仍为预览版） -->
+    <PackageReference Include="Microsoft.Agents.AI" Version="1.0.0-preview.251219.1" />
+    <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-preview.251219.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hrevolve.Application\Hrevolve.Application.csproj" />
+  </ItemGroup>
 
 </Project>
