@@ -1,9 +1,3 @@
-using Hrevolve.Domain.Employees;
-using Hrevolve.Infrastructure.Persistence.Repositories;
-using Hrevolve.Shared.Exceptions;
-using Hrevolve.Shared.Results;
-using MediatR;
-
 namespace Hrevolve.Application.Employees.Queries;
 
 /// <summary>

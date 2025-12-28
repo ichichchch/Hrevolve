@@ -1,5 +1,3 @@
-using Hrevolve.Domain.Common;
-
 namespace Hrevolve.Domain.Employees;
 
 /// <summary>

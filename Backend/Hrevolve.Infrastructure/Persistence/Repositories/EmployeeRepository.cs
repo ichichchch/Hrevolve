@@ -1,6 +1,3 @@
-using Hrevolve.Domain.Employees;
-using Microsoft.EntityFrameworkCore;
-
 namespace Hrevolve.Infrastructure.Persistence.Repositories;
 
 /// <summary>

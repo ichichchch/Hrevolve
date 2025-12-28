@@ -1,5 +1,3 @@
-using FluentValidation;
-using MediatR;
 using ValidationException = Hrevolve.Shared.Exceptions.ValidationException;
 
 namespace Hrevolve.Application.Behaviors;

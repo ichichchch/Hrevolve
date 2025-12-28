@@ -1,8 +1,3 @@
-using Hrevolve.Agent.Services;
-using Hrevolve.Shared.Identity;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-
 namespace Hrevolve.Web.Controllers;
 
 /// <summary>

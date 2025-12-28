@@ -1,13 +1,3 @@
-using FluentValidation;
-using Hrevolve.Infrastructure.Persistence.Repositories;
-using Hrevolve.Shared.Results;
-using MediatR;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-
 namespace Hrevolve.Application.Identity.Commands;
 
 /// <summary>

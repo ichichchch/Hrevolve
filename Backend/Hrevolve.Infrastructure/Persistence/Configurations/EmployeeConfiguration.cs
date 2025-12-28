@@ -1,5 +1,3 @@
-using Hrevolve.Domain.Employees;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Hrevolve.Infrastructure.Persistence.Configurations;

@@ -1,10 +1,3 @@
-using Hrevolve.Domain.Attendance;
-using Hrevolve.Domain.Identity;
-using Hrevolve.Web.Filters;
-using MediatR;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-
 namespace Hrevolve.Web.Controllers;
 
 /// <summary>

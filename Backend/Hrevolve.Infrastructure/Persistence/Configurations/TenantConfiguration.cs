@@ -1,7 +1,6 @@
-using Hrevolve.Domain.Tenants;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.Text.Json;
+using TenantSettings = Hrevolve.Domain.Tenants.TenantSettings;
 
 namespace Hrevolve.Infrastructure.Persistence.Configurations;
 

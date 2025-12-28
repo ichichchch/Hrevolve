@@ -1,14 +1,3 @@
-using Hrevolve.Agent;
-using Hrevolve.Application;
-using Hrevolve.Infrastructure;
-using Hrevolve.Web.Middleware;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using Serilog;
-using System.Text;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // 配置 Kestrel 启用 HTTP/3

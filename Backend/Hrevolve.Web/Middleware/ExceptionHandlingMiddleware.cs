@@ -1,7 +1,3 @@
-using Hrevolve.Shared.Exceptions;
-using System.Net;
-using System.Text.Json;
-
 namespace Hrevolve.Web.Middleware;
 
 /// <summary>

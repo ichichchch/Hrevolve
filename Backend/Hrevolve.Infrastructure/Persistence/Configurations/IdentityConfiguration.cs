@@ -1,5 +1,3 @@
-using Hrevolve.Domain.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Hrevolve.Infrastructure.Persistence.Configurations;

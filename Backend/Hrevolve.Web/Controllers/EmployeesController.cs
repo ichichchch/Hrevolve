@@ -1,11 +1,3 @@
-using Hrevolve.Application.Employees.Commands;
-using Hrevolve.Application.Employees.Queries;
-using Hrevolve.Domain.Identity;
-using Hrevolve.Web.Filters;
-using MediatR;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-
 namespace Hrevolve.Web.Controllers;
 
 /// <summary>

@@ -1,8 +1,3 @@
-using System.Diagnostics;
-using Hrevolve.Shared.Identity;
-using MediatR;
-using Microsoft.Extensions.Logging;
-
 namespace Hrevolve.Application.Behaviors;
 
 /// <summary>

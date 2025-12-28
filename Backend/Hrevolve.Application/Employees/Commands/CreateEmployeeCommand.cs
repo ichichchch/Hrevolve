@@ -1,11 +1,3 @@
-using FluentValidation;
-using Hrevolve.Domain.Common;
-using Hrevolve.Domain.Employees;
-using Hrevolve.Infrastructure.Persistence.Repositories;
-using Hrevolve.Shared.MultiTenancy;
-using Hrevolve.Shared.Results;
-using MediatR;
-
 namespace Hrevolve.Application.Employees.Commands;
 
 /// <summary>

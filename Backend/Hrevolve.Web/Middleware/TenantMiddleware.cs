@@ -1,6 +1,3 @@
-using Hrevolve.Shared.Exceptions;
-using Hrevolve.Shared.MultiTenancy;
-
 namespace Hrevolve.Web.Middleware;
 
 /// <summary>

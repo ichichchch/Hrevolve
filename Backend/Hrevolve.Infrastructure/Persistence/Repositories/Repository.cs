@@ -1,7 +1,3 @@
-using System.Linq.Expressions;
-using Hrevolve.Domain.Common;
-using Microsoft.EntityFrameworkCore;
-
 namespace Hrevolve.Infrastructure.Persistence.Repositories;
 
 /// <summary>

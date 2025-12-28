@@ -1,7 +1,3 @@
-using Hrevolve.Web.Filters;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-
 namespace Hrevolve.Web.Controllers;
 
 /// <summary>

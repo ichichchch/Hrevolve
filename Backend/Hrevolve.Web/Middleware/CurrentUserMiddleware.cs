@@ -1,6 +1,3 @@
-using Hrevolve.Shared.Identity;
-using System.Security.Claims;
-
 namespace Hrevolve.Web.Middleware;
 
 /// <summary>

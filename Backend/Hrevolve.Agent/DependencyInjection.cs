@@ -1,9 +1,3 @@
-using Hrevolve.Agent.Services;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using OpenAI;
-
 namespace Hrevolve.Agent;
 
 /// <summary>

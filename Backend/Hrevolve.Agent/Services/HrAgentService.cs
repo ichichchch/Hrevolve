@@ -1,6 +1,3 @@
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
-
 namespace Hrevolve.Agent.Services;
 
 /// <summary>
