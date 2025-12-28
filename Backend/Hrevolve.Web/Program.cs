@@ -31,41 +31,8 @@ builder.Host.UseSerilog();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// Swagger配置
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "Hrevolve HRM API",
-        Version = "v1",
-        Description = "企业级SaaS人力资源管理系统API - 基于.NET 10和Microsoft Agent Framework"
-    });
-    
-    // JWT认证配置
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-    
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
-});
+// 添加 OpenAPI
+builder.Services.AddOpenApi();
 
 // JWT认证
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -121,11 +88,8 @@ using (var scope = app.Services.CreateScope())
 // 配置中间件管道
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Hrevolve HRM API v1");
-    });
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 // CORS必须在其他中间件之前

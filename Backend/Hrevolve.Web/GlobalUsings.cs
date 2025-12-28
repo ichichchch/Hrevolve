@@ -13,13 +13,15 @@ global using Microsoft.AspNetCore.Mvc.Filters;
 global using Microsoft.AspNetCore.Authentication.JwtBearer;
 global using Microsoft.AspNetCore.Server.Kestrel.Core;
 global using Microsoft.IdentityModel.Tokens;
-global using Microsoft.OpenApi.Models;
 
 // MediatR
 global using MediatR;
 
 // Serilog
 global using Serilog;
+
+// Scalar
+global using Scalar.AspNetCore;
 
 // 各层引用
 global using Hrevolve.Agent;
