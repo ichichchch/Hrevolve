@@ -6,12 +6,19 @@ namespace Hrevolve.Shared.MultiTenancy;
 public class TenantInfo
 {
     public Guid Id { get; set; }
+
     public string Name { get; set; } = null!;
+
     public string Code { get; set; } = null!;
+
     public string? Domain { get; set; }
+
     public string? ConnectionString { get; set; }
+
     public TenantSettings Settings { get; set; } = new();
+
     public bool IsActive { get; set; }
+
 }
 
 /// <summary>
@@ -20,10 +27,15 @@ public class TenantInfo
 public class TenantSettings
 {
     public string Timezone { get; set; } = "Asia/Shanghai";
+
     public string Locale { get; set; } = "zh-CN";
+
     public string Currency { get; set; } = "CNY";
+
     public int MaxEmployees { get; set; } = 100;
+
     public bool EnableMfa { get; set; } = true;
+
     public bool EnableSso { get; set; }
 }
 
@@ -41,4 +53,5 @@ public interface ITenantResolver
     /// 根据ID获取租户
     /// </summary>
     Task<TenantInfo?> GetByIdAsync(Guid tenantId);
+
 }

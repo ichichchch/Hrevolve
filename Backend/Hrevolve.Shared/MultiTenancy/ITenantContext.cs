@@ -21,6 +21,7 @@ public interface ITenantContext
     bool HasTenant { get; }
 }
 
+
 /// <summary>
 /// 租户上下文访问器 - 用于设置和获取租户上下文
 /// </summary>
@@ -35,17 +36,13 @@ public interface ITenantContextAccessor
 /// <summary>
 /// 租户上下文实现
 /// </summary>
-public class TenantContext : ITenantContext
+public class TenantContext(Guid tenantId, string? tenantCode = null) : ITenantContext
 {
-    public Guid TenantId { get; }
-    public string? TenantCode { get; }
+    public Guid TenantId { get; } = tenantId;
+
+    public string? TenantCode { get; } = tenantCode;
+
     public bool HasTenant => TenantId != Guid.Empty;
-    
-    public TenantContext(Guid tenantId, string? tenantCode = null)
-    {
-        TenantId = tenantId;
-        TenantCode = tenantCode;
-    }
 }
 
 /// <summary>
@@ -53,27 +50,29 @@ public class TenantContext : ITenantContext
 /// </summary>
 public class TenantContextAccessor : ITenantContextAccessor
 {
+
     private static readonly AsyncLocal<TenantContextHolder> _tenantContextCurrent = new();
-    
+
     public ITenantContext? TenantContext
     {
         get => _tenantContextCurrent.Value?.Context;
         set
         {
-            var holder = _tenantContextCurrent.Value;
-            if (holder != null)
+            if (value == null)
             {
-                holder.Context = null;
+                // 设置 null 时，完全清除持有者，避免陈旧对象
+                _tenantContextCurrent.Value = default!;
             }
-            
-            if (value != null)
+            else
             {
+                // 非空时，创建新持有者替换旧值
                 _tenantContextCurrent.Value = new TenantContextHolder { Context = value };
             }
         }
     }
-    
-    private class TenantContextHolder
+
+
+    private sealed class TenantContextHolder
     {
         public ITenantContext? Context;
     }

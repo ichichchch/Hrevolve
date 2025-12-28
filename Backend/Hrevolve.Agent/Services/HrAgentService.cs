@@ -25,14 +25,13 @@ public interface IHrAgentService
 /// <summary>
 /// HR Agent服务实现
 /// </summary>
-public class HrAgentService(
-    IChatClient chatClient,
-    IHrToolProvider toolProvider,
-    ILogger<HrAgentService> logger) : IHrAgentService
+public class HrAgentService(IChatClient chatClient,IHrToolProvider toolProvider,ILogger<HrAgentService> logger) : IHrAgentService
 {
+
     // 对话历史存储（生产环境应使用Redis或数据库）
-    private static readonly Dictionary<Guid, List<ChatMessage>> _chatHistories = new();
-    private static readonly object _lock = new();
+    private static readonly Dictionary<Guid, List<ChatMessage>> _chatHistories = [];
+    private static readonly Lock _lock = new();
+    private const int DefaultChatHistoryLimit = 20;
     
     public async Task<string> ChatAsync(Guid employeeId, string message, CancellationToken cancellationToken = default)
     {
@@ -61,7 +60,7 @@ public class HrAgentService(
             chatHistory.Add(new ChatMessage(ChatRole.Assistant, assistantMessage));
             
             // 限制历史长度
-            TrimChatHistory(chatHistory, maxMessages: 20);
+            TrimChatHistory(chatHistory, maxMessages: DefaultChatHistoryLimit);
             
             return assistantMessage;
         }
@@ -72,7 +71,7 @@ public class HrAgentService(
         }
     }
     
-    public Task<IReadOnlyList<AgentChatMessage>> GetChatHistoryAsync(Guid employeeId, int limit = 20)
+    public Task<IReadOnlyList<AgentChatMessage>> GetChatHistoryAsync(Guid employeeId, int limit = DefaultChatHistoryLimit)
     {
         lock (_lock)
         {
@@ -83,12 +82,12 @@ public class HrAgentService(
                     .TakeLast(limit)
                     .Select(m => new AgentChatMessage(m.Role.Value, m.Text ?? ""))
                     .ToList();
-                
+
                 return Task.FromResult<IReadOnlyList<AgentChatMessage>>(messages);
             }
         }
-        
-        return Task.FromResult<IReadOnlyList<AgentChatMessage>>(Array.Empty<AgentChatMessage>());
+
+        return Task.FromResult<IReadOnlyList<AgentChatMessage>>([]);
     }
     
     public Task ClearChatHistoryAsync(Guid employeeId)
@@ -100,22 +99,21 @@ public class HrAgentService(
         return Task.CompletedTask;
     }
     
-    private List<ChatMessage> GetOrCreateChatHistory(Guid employeeId)
+    private static List<ChatMessage> GetOrCreateChatHistory(Guid employeeId)
     {
         lock (_lock)
         {
             if (!_chatHistories.TryGetValue(employeeId, out var history))
             {
-                history = [new ChatMessage(ChatRole.System, GetSystemPrompt())];
+                history = [new ChatMessage(ChatRole.System, GetSystemPrompt)];
                 _chatHistories[employeeId] = history;
             }
             return history;
         }
     }
     
-    private static string GetSystemPrompt()
-    {
-        return """
+    private const string GetSystemPrompt = 
+           """
             你是Hrevolve HR助手，一个专业、友好的人力资源AI助手。
             
             你的职责包括：
@@ -132,7 +130,7 @@ public class HrAgentService(
             - 如果需要执行操作（如请假），请先确认所有必要信息
             - 当需要调用工具时，请使用提供的工具函数
             """;
-    }
+    
     
     private static void TrimChatHistory(List<ChatMessage> history, int maxMessages)
     {

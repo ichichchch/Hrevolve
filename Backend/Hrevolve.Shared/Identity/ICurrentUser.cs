@@ -70,16 +70,25 @@ public interface ICurrentUserAccessor
 public class CurrentUser : ICurrentUser
 {
     public Guid? Id { get; init; }
+
     public string? UserName { get; init; }
+
     public string? Email { get; init; }
+
     public Guid? TenantId { get; init; }
+
     public Guid? EmployeeId { get; init; }
+
     public IEnumerable<string> Roles { get; init; } = [];
+
     public IEnumerable<string> Permissions { get; init; } = [];
+
     public bool IsAuthenticated => Id.HasValue;
     
     public bool HasPermission(string permission) => Permissions.Contains(permission);
+
     public bool IsInRole(string role) => Roles.Contains(role);
+
 }
 
 /// <summary>
@@ -87,27 +96,30 @@ public class CurrentUser : ICurrentUser
 /// </summary>
 public class CurrentUserAccessor : ICurrentUserAccessor
 {
+
     private static readonly AsyncLocal<CurrentUserHolder> _currentUserHolder = new();
     
+  
     public ICurrentUser? CurrentUser
     {
         get => _currentUserHolder.Value?.User;
         set
         {
-            var holder = _currentUserHolder.Value;
-            if (holder != null)
+            // 直接替换整个持有者对象，避免冗余操作
+            if (value == null)
             {
-                holder.User = null;
+                _currentUserHolder.Value = default!; // 清除当前用户
             }
-            
-            if (value != null)
+            else
             {
+                // 创建新持有者实例，或复用现有对象（如果可变）
                 _currentUserHolder.Value = new CurrentUserHolder { User = value };
             }
         }
     }
-    
-    private class CurrentUserHolder
+
+
+    private sealed class CurrentUserHolder
     {
         public ICurrentUser? User;
     }

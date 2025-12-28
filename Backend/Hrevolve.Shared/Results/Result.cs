@@ -18,10 +18,10 @@ public class Result
     }
     
     public static Result Success() => new(true, null, null);
-    public static Result Failure(string error, string? errorCode = null) => new(false, error, errorCode);
-    
     public static Result<T> Success<T>(T value) => new(value, true, null, null);
+    public static Result Failure(string error, string? errorCode = null) => new(false, error, errorCode);
     public static Result<T> Failure<T>(string error, string? errorCode = null) => new(default, false, error, errorCode);
+
 }
 
 /// <summary>
@@ -31,8 +31,7 @@ public class Result<T> : Result
 {
     public T? Value { get; }
     
-    internal Result(T? value, bool isSuccess, string? error, string? errorCode)
-        : base(isSuccess, error, errorCode)
+    internal Result(T? value, bool isSuccess, string? error, string? errorCode): base(isSuccess, error, errorCode)
     {
         Value = value;
     }
@@ -43,23 +42,15 @@ public class Result<T> : Result
 /// <summary>
 /// 分页结果
 /// </summary>
-public class PagedResult<T>
+public class PagedResult<T>(IReadOnlyList<T> items, int totalCount, int pageNumber, int pageSize)
 {
-    public IReadOnlyList<T> Items { get; }
-    public int TotalCount { get; }
-    public int PageNumber { get; }
-    public int PageSize { get; }
+    public IReadOnlyList<T> Items { get; } = items;
+    public int TotalCount { get; } = totalCount;
+    public int PageNumber { get; } = pageNumber;
+    public int PageSize { get; } = pageSize;
     public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
     public bool HasPreviousPage => PageNumber > 1;
     public bool HasNextPage => PageNumber < TotalPages;
-    
-    public PagedResult(IReadOnlyList<T> items, int totalCount, int pageNumber, int pageSize)
-    {
-        Items = items;
-        TotalCount = totalCount;
-        PageNumber = pageNumber;
-        PageSize = pageSize;
-    }
 }
 
 /// <summary>
@@ -79,7 +70,21 @@ public class PagedRequest
     public int PageSize
     {
         get => _pageSize;
-        set => _pageSize = value < 1 ? 20 : (value > 100 ? 100 : value);
+        set
+        {
+            if (value < 1)
+            {
+                _pageSize = 20;
+            }
+            else if (value > 100)
+            {
+                _pageSize = 100;
+            }
+            else
+            {
+                _pageSize = value;
+            }
+        }
     }
     
     public string? SortBy { get; set; }
