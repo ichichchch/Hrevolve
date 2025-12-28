@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { organizationApi } from '@/api';
 import type { Position } from '@/types';
 
+const { t } = useI18n();
 const positions = ref<Position[]>([]);
 const loading = ref(false);
 
@@ -20,12 +22,12 @@ onMounted(() => fetchPositions());
 <template>
   <div class="positions-view">
     <el-card>
-      <template #header><span>职位管理</span></template>
+      <template #header><span>{{ t('organization.positionManagement') }}</span></template>
       <el-table :data="positions" v-loading="loading" stripe>
-        <el-table-column prop="code" label="职位代码" width="120" />
-        <el-table-column prop="name" label="职位名称" width="200" />
-        <el-table-column prop="level" label="职级" width="100" />
-        <el-table-column prop="description" label="描述" />
+        <el-table-column prop="code" :label="t('organization.positionCode')" width="120" />
+        <el-table-column prop="name" :label="t('organization.positionName')" width="200" />
+        <el-table-column prop="level" :label="t('organization.positionLevel')" width="100" />
+        <el-table-column prop="description" :label="t('organization.positionDescription')" />
       </el-table>
     </el-card>
   </div>

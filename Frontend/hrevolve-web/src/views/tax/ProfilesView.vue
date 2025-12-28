@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, Edit, Delete, Search } from '@element-plus/icons-vue';
 import { taxApi } from '@/api';
 import type { TaxProfile } from '@/types';
 
+const { t } = useI18n();
 const loading = ref(false);
 const profiles = ref<TaxProfile[]>([]);
 const dialogVisible = ref(false);
@@ -25,28 +27,28 @@ const fetchData = async () => {
 
 const handleAdd = () => {
   form.value = { isActive: true };
-  dialogTitle.value = '新增税务档案';
+  dialogTitle.value = t('tax.newProfile');
   dialogVisible.value = true;
 };
 
 const handleEdit = (item: TaxProfile) => {
   form.value = { ...item };
-  dialogTitle.value = '编辑税务档案';
+  dialogTitle.value = t('tax.editProfile');
   dialogVisible.value = true;
 };
 
 const handleDelete = async (item: TaxProfile) => {
-  await ElMessageBox.confirm(`确定删除该税务档案吗？`, '提示', { type: 'warning' });
+  await ElMessageBox.confirm(t('tax.confirmDeleteProfile'), t('common.confirm'), { type: 'warning' });
   try {
     await taxApi.deleteTaxProfile(item.id);
-    ElMessage.success('删除成功');
+    ElMessage.success(t('tax.deleteSuccess'));
     fetchData();
   } catch { /* ignore */ }
 };
 
 const handleSave = async () => {
   if (!form.value.employeeId || !form.value.taxNumber) {
-    ElMessage.warning('请填写必填项');
+    ElMessage.warning(t('tax.fillRequired'));
     return;
   }
   saving.value = true;
@@ -56,7 +58,7 @@ const handleSave = async () => {
     } else {
       await taxApi.createTaxProfile(form.value);
     }
-    ElMessage.success('保存成功');
+    ElMessage.success(t('common.success'));
     dialogVisible.value = false;
     fetchData();
   } catch { /* ignore */ } finally { saving.value = false; }
@@ -70,31 +72,31 @@ onMounted(() => fetchData());
     <el-card>
       <template #header>
         <div class="card-header">
-          <span class="card-title">税务档案管理</span>
+          <span class="card-title">{{ t('tax.taxProfiles') }}</span>
           <div class="header-actions">
-            <el-input v-model="searchKeyword" placeholder="搜索" :prefix-icon="Search" clearable style="width: 180px" />
-            <el-button type="primary" :icon="Plus" @click="handleAdd">新增档案</el-button>
+            <el-input v-model="searchKeyword" :placeholder="t('common.search')" :prefix-icon="Search" clearable style="width: 180px" />
+            <el-button type="primary" :icon="Plus" @click="handleAdd">{{ t('tax.addProfile') }}</el-button>
           </div>
         </div>
       </template>
       
       <el-table v-loading="loading" :data="profiles" stripe>
-        <el-table-column prop="employeeName" label="员工" width="120" />
-        <el-table-column prop="taxNumber" label="税号" width="180" />
-        <el-table-column prop="taxType" label="纳税类型" width="120">
+        <el-table-column prop="employeeName" :label="t('tax.employee')" width="120" />
+        <el-table-column prop="taxNumber" :label="t('tax.taxNumber')" width="180" />
+        <el-table-column prop="taxType" :label="t('tax.taxType')" width="120">
           <template #default="{ row }">
-            <el-tag size="small">{{ row.taxType === 'resident' ? '居民' : '非居民' }}</el-tag>
+            <el-tag size="small">{{ row.taxType === 'resident' ? t('tax.resident') : t('tax.nonResident') }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="deductions" label="专项扣除" min-width="150">
+        <el-table-column prop="deductions" :label="t('tax.specialDeductionsCol')" min-width="150">
           <template #default="{ row }">¥{{ row.deductions?.toLocaleString() || 0 }}</template>
         </el-table-column>
-        <el-table-column prop="isActive" label="状态" width="80">
+        <el-table-column prop="isActive" :label="t('common.status')" width="80">
           <template #default="{ row }">
-            <el-tag :type="row.isActive ? 'success' : 'danger'" size="small">{{ row.isActive ? '有效' : '无效' }}</el-tag>
+            <el-tag :type="row.isActive ? 'success' : 'danger'" size="small">{{ row.isActive ? t('tax.valid') : t('tax.invalid') }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="120" fixed="right">
+        <el-table-column :label="t('common.actions')" width="120" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" size="small" @click="handleEdit(row)"><el-icon><Edit /></el-icon></el-button>
             <el-button link type="danger" size="small" @click="handleDelete(row)"><el-icon><Delete /></el-icon></el-button>
@@ -109,20 +111,20 @@ onMounted(() => fetchData());
     
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="550px">
       <el-form :model="form" label-width="100px">
-        <el-form-item label="员工ID" required><el-input v-model="form.employeeId" placeholder="请输入员工ID" /></el-form-item>
-        <el-form-item label="税号" required><el-input v-model="form.taxNumber" placeholder="请输入税号" /></el-form-item>
-        <el-form-item label="纳税类型">
+        <el-form-item :label="t('employee.employeeNo')" required><el-input v-model="form.employeeId" :placeholder="t('tax.enterEmployeeId')" /></el-form-item>
+        <el-form-item :label="t('tax.taxNumber')" required><el-input v-model="form.taxNumber" :placeholder="t('tax.enterTaxNumber')" /></el-form-item>
+        <el-form-item :label="t('tax.taxType')">
           <el-select v-model="form.taxType" style="width: 100%">
-            <el-option label="居民" value="resident" />
-            <el-option label="非居民" value="non-resident" />
+            <el-option :label="t('tax.resident')" value="resident" />
+            <el-option :label="t('tax.nonResident')" value="non-resident" />
           </el-select>
         </el-form-item>
-        <el-form-item label="专项扣除"><el-input-number v-model="form.deductions" :min="0" :precision="2" style="width: 100%" /></el-form-item>
-        <el-form-item label="状态"><el-switch v-model="form.isActive" active-text="有效" inactive-text="无效" /></el-form-item>
+        <el-form-item :label="t('tax.specialDeductionsCol')"><el-input-number v-model="form.deductions" :min="0" :precision="2" style="width: 100%" /></el-form-item>
+        <el-form-item :label="t('common.status')"><el-switch v-model="form.isActive" :active-text="t('tax.valid')" :inactive-text="t('tax.invalid')" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
   </div>

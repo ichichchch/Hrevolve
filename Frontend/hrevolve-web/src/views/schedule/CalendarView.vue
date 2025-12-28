@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue';
 import { scheduleApi } from '@/api';
 
+const { t } = useI18n();
 const loading = ref(false);
 const currentDate = ref(new Date());
 const schedules = ref<any[]>([]);
@@ -33,9 +35,16 @@ const calendarDays = computed(() => {
   return days;
 });
 
+// 星期标题（响应式）
+const weekdayHeaders = computed(() => {
+  const keys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+  const prefix = t('weekdays.prefix');
+  return keys.map(key => prefix + t(`weekdays.${key}`));
+});
+
 // 格式化
 const formatDate = (d: Date) => d.toISOString().split('T')[0];
-const formatMonth = (d: Date) => `${d.getFullYear()}年${d.getMonth() + 1}月`;
+const formatMonth = (d: Date) => t('calendar.yearMonth', { year: d.getFullYear(), month: d.getMonth() + 1 });
 
 // 获取某天的排班数量
 const getDayScheduleCount = (date: Date) => {
@@ -59,8 +68,8 @@ const fetchData = async () => {
     const month = currentDate.value.getMonth();
     const startDate = formatDate(new Date(year, month, 1));
     const endDate = formatDate(new Date(year, month + 1, 0));
-    const res = await scheduleApi.getSchedules({ startDate, endDate });
-    schedules.value = res.data;
+    const res = await scheduleApi.getSchedules({ page: 1, pageSize: 1000, startDate, endDate });
+    schedules.value = Array.isArray(res.data) ? res.data : (res.data as any).items || [];
   } catch { /* ignore */ } finally { loading.value = false; }
 };
 
@@ -75,7 +84,7 @@ onMounted(() => fetchData());
     <el-card>
       <template #header>
         <div class="card-header">
-          <span class="card-title">排班日历</span>
+          <span class="card-title">{{ t('calendar.title') }}</span>
           <div class="month-nav">
             <el-button :icon="ArrowLeft" @click="changeMonth(-1)" />
             <span class="month-label">{{ formatMonth(currentDate) }}</span>
@@ -86,7 +95,7 @@ onMounted(() => fetchData());
       
       <div class="calendar-grid" v-loading="loading">
         <div class="weekday-header">
-          <div v-for="day in ['一', '二', '三', '四', '五', '六', '日']" :key="day" class="weekday">周{{ day }}</div>
+          <div v-for="day in weekdayHeaders" :key="day" class="weekday">{{ day }}</div>
         </div>
         <div class="days-grid">
           <div
@@ -97,7 +106,7 @@ onMounted(() => fetchData());
           >
             <span class="day-number">{{ item.date.getDate() }}</span>
             <div v-if="getDayScheduleCount(item.date) > 0" class="schedule-count">
-              {{ getDayScheduleCount(item.date) }}人排班
+              {{ t('calendar.scheduleCount', { count: getDayScheduleCount(item.date) }) }}
             </div>
           </div>
         </div>

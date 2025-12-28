@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, Edit, Delete } from '@element-plus/icons-vue';
 import { companyApi } from '@/api';
 import type { CostCenter } from '@/types';
+
+const { t } = useI18n();
 
 const loading = ref(false);
 const treeData = ref<CostCenter[]>([]);
@@ -24,21 +27,21 @@ const fetchData = async () => {
 
 const handleAdd = (parent?: CostCenter) => {
   form.value = { parentId: parent?.id, isActive: true };
-  dialogTitle.value = parent ? `新增子成本中心 - ${parent.name}` : '新增成本中心';
+  dialogTitle.value = parent ? t('costCenters.addChild', { name: parent.name }) : t('costCenters.management');
   dialogVisible.value = true;
 };
 
 const handleEdit = (data: CostCenter) => {
   form.value = { ...data };
-  dialogTitle.value = '编辑成本中心';
+  dialogTitle.value = t('costCenters.edit');
   dialogVisible.value = true;
 };
 
 const handleDelete = async (data: CostCenter) => {
-  await ElMessageBox.confirm(`确定删除成本中心"${data.name}"吗？`, '提示', { type: 'warning' });
+  await ElMessageBox.confirm(t('costCenters.confirmDelete', { name: data.name }), t('assistantExtra.tip'), { type: 'warning' });
   try {
     await companyApi.deleteCostCenter(data.id);
-    ElMessage.success('删除成功');
+    ElMessage.success(t('common.success'));
     fetchData();
   } catch { /* ignore */ }
 };
@@ -51,7 +54,7 @@ const handleSave = async () => {
     } else {
       await companyApi.createCostCenter(form.value);
     }
-    ElMessage.success('保存成功');
+    ElMessage.success(t('common.success'));
     dialogVisible.value = false;
     fetchData();
   } catch { /* ignore */ } finally { saving.value = false; }
@@ -65,8 +68,8 @@ onMounted(() => fetchData());
     <el-card>
       <template #header>
         <div class="card-header">
-          <span class="card-title">成本中心管理</span>
-          <el-button type="primary" :icon="Plus" @click="handleAdd()">新增</el-button>
+          <span class="card-title">{{ t('costCenters.management') }}</span>
+          <el-button type="primary" :icon="Plus" @click="handleAdd()">{{ t('costCenters.addRoot') }}</el-button>
         </div>
       </template>
       
@@ -82,7 +85,7 @@ onMounted(() => fetchData());
             <div class="node-content">
               <span class="node-name">{{ node.label }}</span>
               <el-tag v-if="data.code" size="small" type="info">{{ data.code }}</el-tag>
-              <el-tag v-if="!data.isActive" size="small" type="danger">已禁用</el-tag>
+              <el-tag v-if="!data.isActive" size="small" type="danger">{{ t('costCenters.disabled') }}</el-tag>
             </div>
             <div class="node-actions">
               <el-button link type="primary" size="small" @click.stop="handleAdd(data)">
@@ -99,31 +102,31 @@ onMounted(() => fetchData());
         </template>
       </el-tree>
       
-      <el-empty v-if="!loading && treeData.length === 0" description="暂无成本中心数据" />
+      <el-empty v-if="!loading && treeData.length === 0" :description="t('costCenters.noData')" />
     </el-card>
     
     <!-- 编辑对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px">
       <el-form :model="form" label-width="100px">
-        <el-form-item label="编码" required>
-          <el-input v-model="form.code" placeholder="请输入编码" />
+        <el-form-item :label="t('costCenters.code')" required>
+          <el-input v-model="form.code" :placeholder="t('costCenters.codePlaceholder')" />
         </el-form-item>
-        <el-form-item label="名称" required>
-          <el-input v-model="form.name" placeholder="请输入名称" />
+        <el-form-item :label="t('costCenters.name')" required>
+          <el-input v-model="form.name" :placeholder="t('costCenters.namePlaceholder')" />
         </el-form-item>
-        <el-form-item label="预算">
+        <el-form-item :label="t('costCenters.budget')">
           <el-input-number v-model="form.budget" :min="0" :precision="2" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="描述">
+        <el-form-item :label="t('costCenters.description')">
           <el-input v-model="form.description" type="textarea" :rows="2" />
         </el-form-item>
-        <el-form-item label="状态">
-          <el-switch v-model="form.isActive" active-text="启用" inactive-text="禁用" />
+        <el-form-item :label="t('common.status')">
+          <el-switch v-model="form.isActive" :active-text="t('settings.enabled')" :inactive-text="t('settings.disabled')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
   </div>

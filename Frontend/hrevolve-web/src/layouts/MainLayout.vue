@@ -206,22 +206,54 @@ const filteredMenuItems = computed(() => {
 // 当前激活的菜单
 const activeMenu = computed(() => route.path);
 
+// 面包屑导航 - 根据路由层级动态生成
+const breadcrumbs = computed(() => {
+  const matched = route.matched;
+  const items: { path: string; title: string }[] = [];
+  
+  // 遍历匹配的路由
+  for (const record of matched) {
+    // 跳过没有 titleKey 的路由（如根布局）
+    if (record.meta?.titleKey) {
+      items.push({
+        path: record.path || '/',
+        title: t(record.meta.titleKey as string),
+      });
+    }
+  }
+  
+  // 如果没有任何面包屑，显示首页
+  if (items.length === 0) {
+    items.push({
+      path: '/',
+      title: t('menu.dashboard'),
+    });
+  }
+  
+  return items;
+});
+
 // 切换语言
 const changeLanguage = async (langCode: string) => {
+  console.log('[i18n] 切换语言:', { from: locale.value, to: langCode });
+  
   if (langCode === locale.value || isChangingLang.value) return;
   
   isChangingLang.value = true;
   
   try {
-    // 从后端加载语言包
-    const response = await localizationApi.getMessages(langCode);
-    if (response.data) {
-      await loadLocaleMessages(langCode, response.data);
-    }
+    // TODO: 暂时禁用后端语言包加载，使用本地语言包测试
+    // const response = await localizationApi.getMessages(langCode);
+    // if (response.data) {
+    //   await loadLocaleMessages(langCode, response.data);
+    // }
     
     // 切换语言
     locale.value = langCode as 'zh-CN' | 'zh-TW' | 'en-US';
     appStore.setLanguage(langCode as Language);
+    
+    console.log('[i18n] 切换后 locale.value:', locale.value);
+    console.log('[i18n] 测试翻译 menu.dashboard:', t('menu.dashboard'));
     
     const langName = locales.value.find(l => l.code === langCode)?.name || langCode;
     ElMessage.success({
@@ -302,9 +334,12 @@ const handleLogout = () => {
           
           <!-- 面包屑 -->
           <el-breadcrumb separator="/">
-            <el-breadcrumb-item :to="{ path: '/' }">{{ t('menu.dashboard') }}</el-breadcrumb-item>
-            <el-breadcrumb-item v-if="route.meta.title">
-              {{ route.meta.title }}
+            <el-breadcrumb-item 
+              v-for="(item, index) in breadcrumbs" 
+              :key="item.path"
+              :to="index < breadcrumbs.length - 1 ? { path: item.path } : undefined"
+            >
+              {{ item.title }}
             </el-breadcrumb-item>
           </el-breadcrumb>
         </div>

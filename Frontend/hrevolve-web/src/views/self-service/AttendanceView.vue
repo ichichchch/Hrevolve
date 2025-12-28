@@ -90,22 +90,22 @@ onMounted(() => {
     <!-- 统计卡片 -->
     <el-row :gutter="16" class="stats-row">
       <el-col :span="4">
-        <el-statistic title="应出勤" :value="monthlyStats.workDays" suffix="天" />
+        <el-statistic :title="t('attendance.stats.workDays')" :value="monthlyStats.workDays" :suffix="t('attendance.stats.daysUnit')" />
       </el-col>
       <el-col :span="4">
-        <el-statistic title="实出勤" :value="monthlyStats.attendedDays" suffix="天" />
+        <el-statistic :title="t('attendance.stats.attendedDays')" :value="monthlyStats.attendedDays" :suffix="t('attendance.stats.daysUnit')" />
       </el-col>
       <el-col :span="4">
-        <el-statistic title="迟到" :value="monthlyStats.lateDays" suffix="次" />
+        <el-statistic :title="t('attendance.stats.lateDays')" :value="monthlyStats.lateDays" :suffix="t('attendance.stats.timesUnit')" />
       </el-col>
       <el-col :span="4">
-        <el-statistic title="早退" :value="monthlyStats.earlyLeaveDays" suffix="次" />
+        <el-statistic :title="t('attendance.stats.earlyLeaveDays')" :value="monthlyStats.earlyLeaveDays" :suffix="t('attendance.stats.timesUnit')" />
       </el-col>
       <el-col :span="4">
-        <el-statistic title="请假" :value="monthlyStats.leaveDays" suffix="天" />
+        <el-statistic :title="t('attendance.stats.leaveDays')" :value="monthlyStats.leaveDays" :suffix="t('attendance.stats.daysUnit')" />
       </el-col>
       <el-col :span="4">
-        <el-statistic title="加班" :value="monthlyStats.overtimeHours" suffix="小时" />
+        <el-statistic :title="t('attendance.stats.overtimeHours')" :value="monthlyStats.overtimeHours" :suffix="t('attendance.stats.hoursUnit')" />
       </el-col>
     </el-row>
     
@@ -114,9 +114,9 @@ onMounted(() => {
       <el-date-picker
         v-model="dateRange"
         type="daterange"
-        range-separator="至"
-        start-placeholder="开始日期"
-        end-placeholder="结束日期"
+        :range-separator="t('attendance.datePicker.to')"
+        :start-placeholder="t('attendance.datePicker.startDate')"
+        :end-placeholder="t('attendance.datePicker.endDate')"
         @change="handleDateChange"
       />
     </el-card>

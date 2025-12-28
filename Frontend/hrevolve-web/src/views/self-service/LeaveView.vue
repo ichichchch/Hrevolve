@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { Plus } from '@element-plus/icons-vue';
@@ -26,12 +26,13 @@ const form = reactive({
   reason: '',
 });
 
-const rules: FormRules = {
-  leaveTypeId: [{ required: true, message: '请选择假期类型', trigger: 'change' }],
-  startDate: [{ required: true, message: '请选择开始日期', trigger: 'change' }],
-  endDate: [{ required: true, message: '请选择结束日期', trigger: 'change' }],
-  reason: [{ required: true, message: '请输入请假原因', trigger: 'blur' }],
-};
+// 表单验证规则 - 使用 computed 确保语言切换时更新
+const rules = computed<FormRules>(() => ({
+  leaveTypeId: [{ required: true, message: t('leave.validation.selectType'), trigger: 'change' }],
+  startDate: [{ required: true, message: t('leave.validation.selectStartDate'), trigger: 'change' }],
+  endDate: [{ required: true, message: t('leave.validation.selectEndDate'), trigger: 'change' }],
+  reason: [{ required: true, message: t('leave.validation.inputReason'), trigger: 'blur' }],
+}));
 
 // 获取假期余额
 const fetchBalances = async () => {
@@ -79,7 +80,7 @@ const handleSubmit = async () => {
       reason: form.reason,
     });
     
-    ElMessage.success('请假申请已提交');
+    ElMessage.success(t('leave.submitSuccess'));
     dialogVisible.value = false;
     fetchRequests();
     fetchBalances();
@@ -90,7 +91,7 @@ const handleSubmit = async () => {
     form.endDate = '';
     form.reason = '';
   } catch {
-    ElMessage.error('提交失败');
+    ElMessage.error(t('leave.submitFailed'));
   }
 };
 
@@ -98,11 +99,11 @@ const handleSubmit = async () => {
 const handleCancel = async (id: string) => {
   try {
     await leaveApi.cancelRequest(id);
-    ElMessage.success('已取消');
+    ElMessage.success(t('leave.cancelSuccess'));
     fetchRequests();
     fetchBalances();
   } catch {
-    ElMessage.error('取消失败');
+    ElMessage.error(t('leave.cancelFailed'));
   }
 };
 
@@ -140,10 +141,10 @@ onMounted(() => {
           </div>
           <div class="balance-value">
             <span class="remaining">{{ balance.remainingDays }}</span>
-            <span class="unit">天</span>
+            <span class="unit">{{ t('leave.daysUnit') }}</span>
           </div>
           <div class="balance-detail">
-            总计 {{ balance.totalDays }} 天 · 已用 {{ balance.usedDays }} 天
+            {{ t('leave.total') }} {{ balance.totalDays }} {{ t('leave.daysUnit') }} · {{ t('leave.used') }} {{ balance.usedDays }} {{ t('leave.daysUnit') }}
           </div>
           <div class="progress-bar">
             <div 
@@ -160,10 +161,10 @@ onMounted(() => {
       <div class="card-header">
         <div class="header-title">
           <span class="title-icon">📋</span>
-          <span>请假记录</span>
+          <span>{{ t('leave.leaveRecords') }}</span>
         </div>
         <el-button class="add-btn" :icon="Plus" @click="dialogVisible = true">
-          申请请假
+          {{ t('leave.applyLeave') }}
         </el-button>
       </div>
       
@@ -195,7 +196,7 @@ onMounted(() => {
                 size="small"
                 @click="handleCancel(row.id)"
               >
-                取消
+                {{ t('common.cancel') }}
               </el-button>
             </template>
           </el-table-column>
@@ -204,10 +205,10 @@ onMounted(() => {
     </div>
     
     <!-- 请假对话框 -->
-    <el-dialog v-model="dialogVisible" title="申请请假" width="500px" class="leave-dialog">
+    <el-dialog v-model="dialogVisible" :title="t('leave.applyLeave')" width="500px" class="leave-dialog">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item :label="t('leave.leaveType')" prop="leaveTypeId">
-          <el-select v-model="form.leaveTypeId" placeholder="请选择假期类型" style="width: 100%">
+          <el-select v-model="form.leaveTypeId" :placeholder="t('leave.validation.selectType')" style="width: 100%">
             <el-option
               v-for="type in leaveTypes"
               :key="type.id"
@@ -220,7 +221,7 @@ onMounted(() => {
           <el-date-picker
             v-model="form.startDate"
             type="date"
-            placeholder="选择开始日期"
+            :placeholder="t('leave.validation.selectStartDate')"
             style="width: 100%"
           />
         </el-form-item>
@@ -228,7 +229,7 @@ onMounted(() => {
           <el-date-picker
             v-model="form.endDate"
             type="date"
-            placeholder="选择结束日期"
+            :placeholder="t('leave.validation.selectEndDate')"
             style="width: 100%"
           />
         </el-form-item>
@@ -237,13 +238,13 @@ onMounted(() => {
             v-model="form.reason"
             type="textarea"
             :rows="3"
-            placeholder="请输入请假原因"
+            :placeholder="t('leave.validation.inputReason')"
           />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button class="dialog-cancel-btn" @click="dialogVisible = false">取消</el-button>
-        <el-button class="dialog-submit-btn" @click="handleSubmit">提交</el-button>
+        <el-button class="dialog-cancel-btn" @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button class="dialog-submit-btn" @click="handleSubmit">{{ t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, Search, Delete } from '@element-plus/icons-vue';
 import { insuranceApi } from '@/api';
 import type { EmployeeInsurance, InsurancePlan } from '@/types';
 
+const { t } = useI18n();
 const loading = ref(false);
 const insurances = ref<EmployeeInsurance[]>([]);
 const plans = ref<InsurancePlan[]>([]);
@@ -33,23 +35,23 @@ const handleAdd = () => {
 };
 
 const handleTerminate = async (item: EmployeeInsurance) => {
-  await ElMessageBox.confirm(`确定终止该员工的保险吗？`, '提示', { type: 'warning' });
+  await ElMessageBox.confirm(t('insurance.confirmTerminate'), t('common.confirm'), { type: 'warning' });
   try {
     await insuranceApi.terminateEmployeeInsurance(item.id);
-    ElMessage.success('已终止');
+    ElMessage.success(t('common.success'));
     fetchData();
   } catch { /* ignore */ }
 };
 
 const handleSave = async () => {
   if (!form.value.employeeId || !form.value.planId) {
-    ElMessage.warning('请填写必填项');
+    ElMessage.warning(t('tax.fillRequired'));
     return;
   }
   saving.value = true;
   try {
     await insuranceApi.enrollEmployeeInsurance(form.value);
-    ElMessage.success('参保成功');
+    ElMessage.success(t('common.success'));
     dialogVisible.value = false;
     fetchData();
   } catch { /* ignore */ } finally { saving.value = false; }
@@ -65,35 +67,35 @@ onMounted(() => fetchData());
     <el-card>
       <template #header>
         <div class="card-header">
-          <span class="card-title">员工参保管理</span>
+          <span class="card-title">{{ t('insurance.employeeInsurance') }}</span>
           <div class="header-actions">
-            <el-input v-model="searchKeyword" placeholder="搜索员工" :prefix-icon="Search" clearable style="width: 180px" />
-            <el-button type="primary" :icon="Plus" @click="handleAdd">新增参保</el-button>
+            <el-input v-model="searchKeyword" :placeholder="t('common.search')" :prefix-icon="Search" clearable style="width: 180px" />
+            <el-button type="primary" :icon="Plus" @click="handleAdd">{{ t('insurance.addEnrollment') }}</el-button>
           </div>
         </div>
       </template>
       
       <el-table v-loading="loading" :data="insurances" stripe>
-        <el-table-column prop="employeeName" label="员工" width="120" />
-        <el-table-column prop="planId" label="保险方案" min-width="150">
+        <el-table-column prop="employeeName" :label="t('schedule.employee')" width="120" />
+        <el-table-column prop="planId" :label="t('insurance.insurancePlan')" min-width="150">
           <template #default="{ row }">{{ getPlanName(row.planId) }}</template>
         </el-table-column>
-        <el-table-column prop="startDate" label="生效日期" width="120" />
-        <el-table-column prop="endDate" label="终止日期" width="120">
+        <el-table-column prop="startDate" :label="t('insurance.effectiveDate')" width="120" />
+        <el-table-column prop="endDate" :label="t('insurance.terminationDate')" width="120">
           <template #default="{ row }">{{ row.endDate || '-' }}</template>
         </el-table-column>
-        <el-table-column prop="premium" label="保费" width="100">
+        <el-table-column prop="premium" :label="t('insurance.premium')" width="100">
           <template #default="{ row }">¥{{ row.premium }}</template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="status" :label="t('common.status')" width="100">
           <template #default="{ row }">
-            <el-tag :type="row.status === 'active' ? 'success' : 'info'" size="small">{{ row.status === 'active' ? '生效中' : '已终止' }}</el-tag>
+            <el-tag :type="row.status === 'active' ? 'success' : 'info'" size="small">{{ row.status === 'active' ? t('insurance.statusActive') : t('insurance.statusTerminated') }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100" fixed="right">
+        <el-table-column :label="t('common.actions')" width="100" fixed="right">
           <template #default="{ row }">
             <el-button v-if="row.status === 'active'" link type="danger" size="small" @click="handleTerminate(row)">
-              <el-icon><Delete /></el-icon> 终止
+              <el-icon><Delete /></el-icon> {{ t('insurance.terminate') }}
             </el-button>
           </template>
         </el-table-column>
@@ -104,23 +106,23 @@ onMounted(() => fetchData());
       </div>
     </el-card>
     
-    <el-dialog v-model="dialogVisible" title="新增参保" width="500px">
+    <el-dialog v-model="dialogVisible" :title="t('insurance.addEnrollment')" width="500px">
       <el-form :model="form" label-width="100px">
-        <el-form-item label="员工" required>
-          <el-input v-model="form.employeeId" placeholder="请输入员工ID" />
+        <el-form-item :label="t('schedule.employee')" required>
+          <el-input v-model="form.employeeId" :placeholder="t('insurance.enterEmployeeId')" />
         </el-form-item>
-        <el-form-item label="保险方案" required>
+        <el-form-item :label="t('insurance.insurancePlan')" required>
           <el-select v-model="form.planId" style="width: 100%">
             <el-option v-for="p in plans" :key="p.id" :label="p.name" :value="p.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="生效日期" required>
+        <el-form-item :label="t('insurance.effectiveDate')" required>
           <el-date-picker v-model="form.startDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
   </div>

@@ -1,11 +1,26 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { settingsApi } from '@/api';
 
+const { t } = useI18n();
 const loading = ref(false);
 const saving = ref(false);
 const activeTab = ref('general');
+
+// 语言选项（响应式）
+const languageOptions = computed(() => [
+  { label: t('languageOptions.zhCN'), value: 'zh-CN' },
+  { label: t('languageOptions.enUS'), value: 'en-US' },
+]);
+
+// 货币选项（响应式）
+const currencyOptions = computed(() => [
+  { label: t('currencyOptions.CNY'), value: 'CNY' },
+  { label: t('currencyOptions.USD'), value: 'USD' },
+  { label: t('currencyOptions.EUR'), value: 'EUR' },
+]);
 
 // 系统配置
 const generalConfig = ref({
@@ -64,7 +79,7 @@ const handleSave = async () => {
       security: securityConfig.value,
       notification: notificationConfig.value,
     });
-    ElMessage.success('保存成功');
+    ElMessage.success(t('common.success'));
   } catch { /* ignore */ } finally { saving.value = false; }
 };
 
@@ -75,11 +90,11 @@ onMounted(() => fetchData());
   <div class="configs-view">
     <el-card v-loading="loading">
       <el-tabs v-model="activeTab">
-        <el-tab-pane label="基本设置" name="general">
+        <el-tab-pane :label="t('settings.generalSettings')" name="general">
           <el-form :model="generalConfig" label-width="120px" style="max-width: 600px">
-            <el-form-item label="系统名称"><el-input v-model="generalConfig.systemName" /></el-form-item>
-            <el-form-item label="公司名称"><el-input v-model="generalConfig.companyName" /></el-form-item>
-            <el-form-item label="时区">
+            <el-form-item :label="t('settings.systemName')"><el-input v-model="generalConfig.systemName" /></el-form-item>
+            <el-form-item :label="t('settings.companyName')"><el-input v-model="generalConfig.companyName" /></el-form-item>
+            <el-form-item :label="t('settings.timezone')">
               <el-select v-model="generalConfig.timezone" style="width: 100%">
                 <el-option label="Asia/Shanghai (UTC+8)" value="Asia/Shanghai" />
                 <el-option label="Asia/Tokyo (UTC+9)" value="Asia/Tokyo" />
@@ -87,61 +102,58 @@ onMounted(() => fetchData());
                 <el-option label="Europe/London (UTC+0)" value="Europe/London" />
               </el-select>
             </el-form-item>
-            <el-form-item label="日期格式">
+            <el-form-item :label="t('settings.dateFormat')">
               <el-select v-model="generalConfig.dateFormat" style="width: 100%">
                 <el-option label="YYYY-MM-DD" value="YYYY-MM-DD" />
                 <el-option label="DD/MM/YYYY" value="DD/MM/YYYY" />
                 <el-option label="MM/DD/YYYY" value="MM/DD/YYYY" />
               </el-select>
             </el-form-item>
-            <el-form-item label="默认语言">
+            <el-form-item :label="t('settings.defaultLanguage')">
               <el-select v-model="generalConfig.language" style="width: 100%">
-                <el-option label="简体中文" value="zh-CN" />
-                <el-option label="English" value="en-US" />
+                <el-option v-for="opt in languageOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
               </el-select>
             </el-form-item>
-            <el-form-item label="货币">
+            <el-form-item :label="t('settings.currency')">
               <el-select v-model="generalConfig.currency" style="width: 100%">
-                <el-option label="人民币 (CNY)" value="CNY" />
-                <el-option label="美元 (USD)" value="USD" />
-                <el-option label="欧元 (EUR)" value="EUR" />
+                <el-option v-for="opt in currencyOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
               </el-select>
             </el-form-item>
           </el-form>
         </el-tab-pane>
         
-        <el-tab-pane label="安全设置" name="security">
+        <el-tab-pane :label="t('settings.securitySettings')" name="security">
           <el-form :model="securityConfig" label-width="140px" style="max-width: 600px">
-            <el-form-item label="密码最小长度"><el-input-number v-model="securityConfig.passwordMinLength" :min="6" :max="20" /></el-form-item>
-            <el-form-item label="要求大写字母"><el-switch v-model="securityConfig.passwordRequireUppercase" /></el-form-item>
-            <el-form-item label="要求小写字母"><el-switch v-model="securityConfig.passwordRequireLowercase" /></el-form-item>
-            <el-form-item label="要求数字"><el-switch v-model="securityConfig.passwordRequireNumber" /></el-form-item>
-            <el-form-item label="要求特殊字符"><el-switch v-model="securityConfig.passwordRequireSpecial" /></el-form-item>
+            <el-form-item :label="t('settings.passwordMinLength')"><el-input-number v-model="securityConfig.passwordMinLength" :min="6" :max="20" /></el-form-item>
+            <el-form-item :label="t('settings.requireUppercase')"><el-switch v-model="securityConfig.passwordRequireUppercase" /></el-form-item>
+            <el-form-item :label="t('settings.requireLowercase')"><el-switch v-model="securityConfig.passwordRequireLowercase" /></el-form-item>
+            <el-form-item :label="t('settings.requireNumber')"><el-switch v-model="securityConfig.passwordRequireNumber" /></el-form-item>
+            <el-form-item :label="t('settings.requireSpecial')"><el-switch v-model="securityConfig.passwordRequireSpecial" /></el-form-item>
             <el-divider />
-            <el-form-item label="会话超时"><el-input-number v-model="securityConfig.sessionTimeout" :min="5" :max="120" /><span style="margin-left: 8px">分钟</span></el-form-item>
-            <el-form-item label="最大登录尝试"><el-input-number v-model="securityConfig.maxLoginAttempts" :min="3" :max="10" /><span style="margin-left: 8px">次</span></el-form-item>
-            <el-form-item label="锁定时长"><el-input-number v-model="securityConfig.lockoutDuration" :min="5" :max="60" /><span style="margin-left: 8px">分钟</span></el-form-item>
-            <el-form-item label="双因素认证"><el-switch v-model="securityConfig.enableTwoFactor" /></el-form-item>
+            <el-form-item :label="t('settings.sessionTimeout')"><el-input-number v-model="securityConfig.sessionTimeout" :min="5" :max="120" /><span style="margin-left: 8px">{{ t('settings.minutes') }}</span></el-form-item>
+            <el-form-item :label="t('settings.maxLoginAttempts')"><el-input-number v-model="securityConfig.maxLoginAttempts" :min="3" :max="10" /><span style="margin-left: 8px">{{ t('settings.times') }}</span></el-form-item>
+            <el-form-item :label="t('settings.lockoutDuration')"><el-input-number v-model="securityConfig.lockoutDuration" :min="5" :max="60" /><span style="margin-left: 8px">{{ t('settings.minutes') }}</span></el-form-item>
+            <el-form-item :label="t('settings.twoFactorAuth')"><el-switch v-model="securityConfig.enableTwoFactor" /></el-form-item>
           </el-form>
         </el-tab-pane>
         
-        <el-tab-pane label="通知设置" name="notification">
+        <el-tab-pane :label="t('settings.notificationSettings')" name="notification">
           <el-form :model="notificationConfig" label-width="120px" style="max-width: 600px">
-            <el-form-item label="启用邮件通知"><el-switch v-model="notificationConfig.enableEmail" /></el-form-item>
-            <el-form-item label="启用短信通知"><el-switch v-model="notificationConfig.enableSms" /></el-form-item>
-            <el-form-item label="启用推送通知"><el-switch v-model="notificationConfig.enablePush" /></el-form-item>
-            <el-divider v-if="notificationConfig.enableEmail">邮件服务器配置</el-divider>
+            <el-form-item :label="t('settings.enableEmailNotification')"><el-switch v-model="notificationConfig.enableEmail" /></el-form-item>
+            <el-form-item :label="t('settings.enableSmsNotification')"><el-switch v-model="notificationConfig.enableSms" /></el-form-item>
+            <el-form-item :label="t('settings.enablePushNotification')"><el-switch v-model="notificationConfig.enablePush" /></el-form-item>
+            <el-divider v-if="notificationConfig.enableEmail">{{ t('settings.emailServerConfig') }}</el-divider>
             <template v-if="notificationConfig.enableEmail">
-              <el-form-item label="SMTP服务器"><el-input v-model="notificationConfig.emailServer" placeholder="smtp.example.com" /></el-form-item>
-              <el-form-item label="端口"><el-input-number v-model="notificationConfig.emailPort" :min="1" :max="65535" /></el-form-item>
-              <el-form-item label="用户名"><el-input v-model="notificationConfig.emailUsername" /></el-form-item>
+              <el-form-item :label="t('settings.smtpServer')"><el-input v-model="notificationConfig.emailServer" placeholder="smtp.example.com" /></el-form-item>
+              <el-form-item :label="t('settings.port')"><el-input-number v-model="notificationConfig.emailPort" :min="1" :max="65535" /></el-form-item>
+              <el-form-item :label="t('settings.username')"><el-input v-model="notificationConfig.emailUsername" /></el-form-item>
             </template>
           </el-form>
         </el-tab-pane>
       </el-tabs>
       
       <div class="form-actions">
-        <el-button type="primary" :loading="saving" @click="handleSave">保存设置</el-button>
+        <el-button type="primary" :loading="saving" @click="handleSave">{{ t('tax.saveSettings') }}</el-button>
       </div>
     </el-card>
   </div>

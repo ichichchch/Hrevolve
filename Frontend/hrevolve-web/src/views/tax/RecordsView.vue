@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Search, Download } from '@element-plus/icons-vue';
 import { taxApi } from '@/api';
 import type { TaxRecord } from '@/types';
 
+const { t } = useI18n();
 const loading = ref(false);
 const records = ref<TaxRecord[]>([]);
 const searchKeyword = ref('');
 const yearFilter = ref(new Date().getFullYear());
-const monthFilter = ref('');
+const monthFilter = ref<number | ''>('');
 const pagination = ref({ page: 1, pageSize: 20, total: 0 });
 
 // 年份选项
@@ -17,8 +19,10 @@ const yearOptions = computed(() => {
   return Array.from({ length: 5 }, (_, i) => currentYear - i);
 });
 
-// 月份选项
-const monthOptions = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: `${i + 1}月` }));
+// 月份选项（响应式）
+const monthOptions = computed(() => 
+  Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: t('taxExtra.monthLabel', { month: i + 1 }) }))
+);
 
 const fetchData = async () => {
   loading.value = true;
@@ -26,8 +30,6 @@ const fetchData = async () => {
     const res = await taxApi.getTaxRecords({
       page: pagination.value.page,
       pageSize: pagination.value.pageSize,
-      year: yearFilter.value,
-      month: monthFilter.value || undefined
     });
     records.value = res.data.items || res.data;
     pagination.value.total = res.data.total || records.value.length;
@@ -41,6 +43,22 @@ const handleExport = async () => {
   } catch { /* ignore */ }
 };
 
+// 合计方法
+const getSummary = ({ columns, data }: { columns: any[]; data: any[] }) => {
+  const sums: string[] = [];
+  columns.forEach((column: any, index: number) => {
+    if (index === 0) { sums[index] = t('tax.total'); return; }
+    const values = data.map((item: any) => Number(item[column.property]));
+    if (['grossIncome', 'deductions', 'taxableIncome', 'taxAmount'].includes(column.property)) {
+      const sum = values.reduce((prev: number, curr: number) => prev + (curr || 0), 0);
+      sums[index] = `¥${sum.toLocaleString()}`;
+    } else {
+      sums[index] = '';
+    }
+  });
+  return sums;
+};
+
 onMounted(() => fetchData());
 </script>
 
@@ -49,41 +67,41 @@ onMounted(() => fetchData());
     <el-card>
       <template #header>
         <div class="card-header">
-          <span class="card-title">报税记录</span>
+          <span class="card-title">{{ t('tax.taxRecords') }}</span>
           <div class="header-actions">
             <el-select v-model="yearFilter" style="width: 100px" @change="fetchData">
-              <el-option v-for="y in yearOptions" :key="y" :label="`${y}年`" :value="y" />
+              <el-option v-for="y in yearOptions" :key="y" :label="t('payroll.yearLabel', { year: y })" :value="y" />
             </el-select>
-            <el-select v-model="monthFilter" placeholder="全部月份" clearable style="width: 100px" @change="fetchData">
+            <el-select v-model="monthFilter" :placeholder="t('tax.allMonths')" clearable style="width: 100px" @change="fetchData">
               <el-option v-for="m in monthOptions" :key="m.value" :label="m.label" :value="m.value" />
             </el-select>
-            <el-input v-model="searchKeyword" placeholder="搜索员工" :prefix-icon="Search" clearable style="width: 160px" />
-            <el-button :icon="Download" @click="handleExport">导出</el-button>
+            <el-input v-model="searchKeyword" :placeholder="t('tax.searchEmployee')" :prefix-icon="Search" clearable style="width: 160px" />
+            <el-button :icon="Download" @click="handleExport">{{ t('tax.export') }}</el-button>
           </div>
         </div>
       </template>
       
       <el-table v-loading="loading" :data="records" stripe show-summary :summary-method="getSummary">
-        <el-table-column prop="employeeName" label="员工" width="120" />
-        <el-table-column prop="period" label="税期" width="100">
+        <el-table-column prop="employeeName" :label="t('tax.employee')" width="120" />
+        <el-table-column prop="period" :label="t('tax.taxPeriod')" width="100">
           <template #default="{ row }">{{ row.year }}-{{ String(row.month).padStart(2, '0') }}</template>
         </el-table-column>
-        <el-table-column prop="grossIncome" label="应税收入" width="120">
+        <el-table-column prop="grossIncome" :label="t('tax.grossIncome')" width="120">
           <template #default="{ row }">¥{{ row.grossIncome?.toLocaleString() }}</template>
         </el-table-column>
-        <el-table-column prop="deductions" label="扣除项" width="120">
+        <el-table-column prop="deductions" :label="t('tax.deductionsCol')" width="120">
           <template #default="{ row }">¥{{ row.deductions?.toLocaleString() }}</template>
         </el-table-column>
-        <el-table-column prop="taxableIncome" label="应纳税所得" width="120">
+        <el-table-column prop="taxableIncome" :label="t('tax.taxableIncome')" width="120">
           <template #default="{ row }">¥{{ row.taxableIncome?.toLocaleString() }}</template>
         </el-table-column>
-        <el-table-column prop="taxAmount" label="应纳税额" width="120">
+        <el-table-column prop="taxAmount" :label="t('tax.taxAmount')" width="120">
           <template #default="{ row }">¥{{ row.taxAmount?.toLocaleString() }}</template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="status" :label="t('common.status')" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 'filed' ? 'success' : row.status === 'pending' ? 'warning' : 'info'" size="small">
-              {{ row.status === 'filed' ? '已申报' : row.status === 'pending' ? '待申报' : '草稿' }}
+              {{ row.status === 'filed' ? t('tax.statusFiled') : row.status === 'pending' ? t('tax.statusPending') : t('tax.statusDraft') }}
             </el-tag>
           </template>
         </el-table-column>
@@ -95,24 +113,6 @@ onMounted(() => fetchData());
     </el-card>
   </div>
 </template>
-
-<script lang="ts">
-// 合计方法
-function getSummary({ columns, data }: any) {
-  const sums: string[] = [];
-  columns.forEach((column: any, index: number) => {
-    if (index === 0) { sums[index] = '合计'; return; }
-    const values = data.map((item: any) => Number(item[column.property]));
-    if (['grossIncome', 'deductions', 'taxableIncome', 'taxAmount'].includes(column.property)) {
-      const sum = values.reduce((prev: number, curr: number) => prev + (curr || 0), 0);
-      sums[index] = `¥${sum.toLocaleString()}`;
-    } else {
-      sums[index] = '';
-    }
-  });
-  return sums;
-}
-</script>
 
 <style scoped lang="scss">
 .tax-records-view {

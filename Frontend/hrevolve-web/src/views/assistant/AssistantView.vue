@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, onMounted } from 'vue';
+import { ref, computed, nextTick, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Promotion, Delete, ChatDotRound } from '@element-plus/icons-vue';
@@ -15,15 +15,15 @@ const inputMessage = ref('');
 const loading = ref(false);
 const chatContainerRef = ref<HTMLElement>();
 
-// 快捷建议
-const suggestions = [
-  { text: '我还有多少年假？', icon: '🏖️' },
-  { text: '帮我请假', icon: '📝' },
-  { text: '查询本月薪资', icon: '💰' },
-  { text: '今天的考勤状态', icon: '⏰' },
-  { text: '公司年假政策是什么？', icon: '📋' },
-  { text: '查看组织架构', icon: '🏢' },
-];
+// 快捷建议（响应式）
+const suggestions = computed(() => [
+  { text: t('assistant.suggestion1'), icon: '🏖️' },
+  { text: t('assistant.suggestion2'), icon: '📝' },
+  { text: t('assistant.suggestion3'), icon: '💰' },
+  { text: t('assistant.suggestion4'), icon: '⏰' },
+  { text: t('assistantExtra.suggestion5'), icon: '📋' },
+  { text: t('assistantExtra.suggestion6'), icon: '🏢' },
+]);
 
 // 滚动到底部
 const scrollToBottom = () => {
@@ -74,7 +74,7 @@ const sendMessage = async (text?: string) => {
   } catch {
     // 移除加载消息
     messages.value.pop();
-    ElMessage.error('发送失败，请重试');
+    ElMessage.error(t('assistantExtra.sendFailed'));
   } finally {
     loading.value = false;
     scrollToBottom();
@@ -84,15 +84,15 @@ const sendMessage = async (text?: string) => {
 // 清空对话
 const clearHistory = async () => {
   try {
-    await ElMessageBox.confirm('确定要清空所有对话记录吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('assistantExtra.confirmClear'), t('assistantExtra.tip'), {
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
       type: 'warning',
     });
     
     await agentApi.clearHistory();
     messages.value = [];
-    ElMessage.success('对话已清空');
+    ElMessage.success(t('assistantExtra.cleared'));
   } catch {
     // 用户取消
   }
@@ -135,7 +135,7 @@ onMounted(() => {
           </div>
           <div class="header-info">
             <span class="title">{{ t('assistant.title') }}</span>
-            <span class="subtitle">7×24小时智能服务</span>
+            <span class="subtitle">{{ t('assistantExtra.subtitle') }}</span>
           </div>
         </div>
         <el-button
@@ -155,8 +155,8 @@ onMounted(() => {
           <div class="welcome-avatar">
             <span>🤖</span>
           </div>
-          <h3>您好！我是Hrevolve HR智能助手</h3>
-          <p>我可以帮您查询假期余额、薪资信息、考勤记录，也可以协助您提交请假申请。</p>
+          <h3>{{ t('assistantExtra.welcomeTitle') }}</h3>
+          <p>{{ t('assistantExtra.welcomeDesc') }}</p>
           
           <div class="suggestions">
             <p class="suggestions-title">{{ t('assistant.suggestions') }}</p>

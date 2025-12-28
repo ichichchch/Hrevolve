@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Search, Download, View } from '@element-plus/icons-vue';
 import { settingsApi } from '@/api';
 import type { AuditLog } from '@/types';
 
+const { t } = useI18n();
 const loading = ref(false);
 const logs = ref<AuditLog[]>([]);
 const detailVisible = ref(false);
@@ -13,15 +15,15 @@ const actionFilter = ref('');
 const dateRange = ref<[Date, Date] | null>(null);
 const pagination = ref({ page: 1, pageSize: 20, total: 0 });
 
-// 操作类型
-const actionTypes = [
-  { value: 'create', label: '创建', type: 'success' },
-  { value: 'update', label: '更新', type: 'warning' },
-  { value: 'delete', label: '删除', type: 'danger' },
-  { value: 'login', label: '登录', type: 'info' },
-  { value: 'logout', label: '登出', type: 'info' },
-  { value: 'export', label: '导出', type: '' },
-];
+// 操作类型 - 使用 computed 实现响应式翻译
+const actionTypes = computed(() => [
+  { value: 'create', label: t('settings.actionCreate'), type: 'success' },
+  { value: 'update', label: t('settings.actionUpdate'), type: 'warning' },
+  { value: 'delete', label: t('settings.actionDelete'), type: 'danger' },
+  { value: 'login', label: t('settings.actionLogin'), type: 'info' },
+  { value: 'logout', label: t('settings.actionLogout'), type: 'info' },
+  { value: 'export', label: t('settings.actionExport'), type: '' },
+]);
 
 const fetchData = async () => {
   loading.value = true;
@@ -53,8 +55,8 @@ const handleExport = async () => {
   } catch { /* ignore */ }
 };
 
-const getActionType = (action: string) => actionTypes.find(a => a.value === action)?.type || 'info';
-const getActionLabel = (action: string) => actionTypes.find(a => a.value === action)?.label || action;
+const getActionType = (action: string) => actionTypes.value.find(a => a.value === action)?.type || 'info';
+const getActionLabel = (action: string) => actionTypes.value.find(a => a.value === action)?.label || action;
 
 // 过滤
 const filteredLogs = computed(() => {
@@ -75,32 +77,32 @@ onMounted(() => fetchData());
     <el-card>
       <template #header>
         <div class="card-header">
-          <span class="card-title">审计日志</span>
+          <span class="card-title">{{ t('settings.auditLogs') }}</span>
           <div class="header-actions">
-            <el-date-picker v-model="dateRange" type="daterange" start-placeholder="开始日期" end-placeholder="结束日期" style="width: 240px" @change="fetchData" />
-            <el-select v-model="actionFilter" placeholder="操作类型" clearable style="width: 120px" @change="fetchData">
+            <el-date-picker v-model="dateRange" type="daterange" :start-placeholder="t('settings.startDate')" :end-placeholder="t('settings.endDate')" style="width: 240px" @change="fetchData" />
+            <el-select v-model="actionFilter" :placeholder="t('settings.actionType')" clearable style="width: 120px" @change="fetchData">
               <el-option v-for="a in actionTypes" :key="a.value" :label="a.label" :value="a.value" />
             </el-select>
-            <el-input v-model="searchKeyword" placeholder="搜索" :prefix-icon="Search" clearable style="width: 160px" />
-            <el-button :icon="Download" @click="handleExport">导出</el-button>
+            <el-input v-model="searchKeyword" :placeholder="t('common.search')" :prefix-icon="Search" clearable style="width: 160px" />
+            <el-button :icon="Download" @click="handleExport">{{ t('settings.export') }}</el-button>
           </div>
         </div>
       </template>
       
       <el-table v-loading="loading" :data="filteredLogs" stripe>
-        <el-table-column prop="createdAt" label="时间" width="170">
+        <el-table-column prop="createdAt" :label="t('settings.time')" width="170">
           <template #default="{ row }">{{ new Date(row.createdAt).toLocaleString() }}</template>
         </el-table-column>
-        <el-table-column prop="userName" label="用户" width="120" />
-        <el-table-column prop="action" label="操作" width="100">
+        <el-table-column prop="userName" :label="t('settings.user')" width="120" />
+        <el-table-column prop="action" :label="t('settings.action')" width="100">
           <template #default="{ row }">
             <el-tag :type="getActionType(row.action)" size="small">{{ getActionLabel(row.action) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="entityType" label="对象类型" width="120" />
-        <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="ipAddress" label="IP地址" width="130" />
-        <el-table-column label="操作" width="80" fixed="right">
+        <el-table-column prop="entityType" :label="t('settings.entityType')" width="120" />
+        <el-table-column prop="description" :label="t('settings.description')" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="ipAddress" :label="t('settings.ipAddress')" width="130" />
+        <el-table-column :label="t('common.actions')" width="80" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" size="small" @click="handleView(row)"><el-icon><View /></el-icon></el-button>
           </template>
@@ -113,16 +115,16 @@ onMounted(() => fetchData());
     </el-card>
     
     <!-- 详情对话框 -->
-    <el-dialog v-model="detailVisible" title="日志详情" width="600px">
+    <el-dialog v-model="detailVisible" :title="t('settings.logDetail')" width="600px">
       <el-descriptions v-if="currentLog" :column="2" border>
-        <el-descriptions-item label="时间">{{ new Date(currentLog.createdAt).toLocaleString() }}</el-descriptions-item>
-        <el-descriptions-item label="用户">{{ currentLog.userName }}</el-descriptions-item>
-        <el-descriptions-item label="操作"><el-tag :type="getActionType(currentLog.action)" size="small">{{ getActionLabel(currentLog.action) }}</el-tag></el-descriptions-item>
-        <el-descriptions-item label="对象类型">{{ currentLog.entityType }}</el-descriptions-item>
-        <el-descriptions-item label="对象ID">{{ currentLog.entityId }}</el-descriptions-item>
-        <el-descriptions-item label="IP地址">{{ currentLog.ipAddress }}</el-descriptions-item>
-        <el-descriptions-item label="描述" :span="2">{{ currentLog.description }}</el-descriptions-item>
-        <el-descriptions-item label="变更详情" :span="2">
+        <el-descriptions-item :label="t('settings.time')">{{ new Date(currentLog.createdAt).toLocaleString() }}</el-descriptions-item>
+        <el-descriptions-item :label="t('settings.user')">{{ currentLog.userName }}</el-descriptions-item>
+        <el-descriptions-item :label="t('settings.action')"><el-tag :type="getActionType(currentLog.action)" size="small">{{ getActionLabel(currentLog.action) }}</el-tag></el-descriptions-item>
+        <el-descriptions-item :label="t('settings.entityType')">{{ currentLog.entityType }}</el-descriptions-item>
+        <el-descriptions-item :label="t('settings.entityId')">{{ currentLog.entityId }}</el-descriptions-item>
+        <el-descriptions-item :label="t('settings.ipAddress')">{{ currentLog.ipAddress }}</el-descriptions-item>
+        <el-descriptions-item :label="t('settings.description')" :span="2">{{ currentLog.description }}</el-descriptions-item>
+        <el-descriptions-item :label="t('settings.changes')" :span="2">
           <pre v-if="currentLog.changes" class="changes-json">{{ JSON.stringify(currentLog.changes, null, 2) }}</pre>
           <span v-else>-</span>
         </el-descriptions-item>

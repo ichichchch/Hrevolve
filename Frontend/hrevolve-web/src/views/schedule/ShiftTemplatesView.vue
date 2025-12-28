@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, Edit, Delete } from '@element-plus/icons-vue';
 import { scheduleApi } from '@/api';
 import type { ShiftTemplate } from '@/types';
 
+const { t } = useI18n();
 const loading = ref(false);
 const templates = ref<ShiftTemplate[]>([]);
 const dialogVisible = ref(false);
@@ -24,23 +26,23 @@ const fetchData = async () => {
 // 新增
 const handleAdd = () => {
   form.value = { isActive: true, workHours: 8, breakMinutes: 60 };
-  dialogTitle.value = '新增班次模板';
+  dialogTitle.value = t('schedule.newShift');
   dialogVisible.value = true;
 };
 
 // 编辑
 const handleEdit = (item: ShiftTemplate) => {
   form.value = { ...item };
-  dialogTitle.value = '编辑班次模板';
+  dialogTitle.value = t('schedule.editShift');
   dialogVisible.value = true;
 };
 
 // 删除
 const handleDelete = async (item: ShiftTemplate) => {
-  await ElMessageBox.confirm(`确定删除班次"${item.name}"吗？`, '提示', { type: 'warning' });
+  await ElMessageBox.confirm(t('schedule.confirmDeleteShift', { name: item.name }), t('common.confirm'), { type: 'warning' });
   try {
     await scheduleApi.deleteShiftTemplate(item.id);
-    ElMessage.success('删除成功');
+    ElMessage.success(t('common.success'));
     fetchData();
   } catch { /* ignore */ }
 };
@@ -48,7 +50,7 @@ const handleDelete = async (item: ShiftTemplate) => {
 // 保存
 const handleSave = async () => {
   if (!form.value.name || !form.value.startTime || !form.value.endTime) {
-    ElMessage.warning('请填写必填项');
+    ElMessage.warning(t('tax.fillRequired'));
     return;
   }
   saving.value = true;
@@ -58,7 +60,7 @@ const handleSave = async () => {
     } else {
       await scheduleApi.createShiftTemplate(form.value);
     }
-    ElMessage.success('保存成功');
+    ElMessage.success(t('common.success'));
     dialogVisible.value = false;
     fetchData();
   } catch { /* ignore */ } finally { saving.value = false; }
@@ -72,8 +74,8 @@ onMounted(() => fetchData());
     <el-card>
       <template #header>
         <div class="card-header">
-          <span class="card-title">班次模板管理</span>
-          <el-button type="primary" :icon="Plus" @click="handleAdd">新增班次</el-button>
+          <span class="card-title">{{ t('schedule.shiftTemplates') }}</span>
+          <el-button type="primary" :icon="Plus" @click="handleAdd">{{ t('schedule.addShift') }}</el-button>
         </div>
       </template>
       
@@ -82,58 +84,58 @@ onMounted(() => fetchData());
           <el-card class="template-card" shadow="hover">
             <div class="template-header">
               <span class="template-name">{{ item.name }}</span>
-              <el-tag v-if="!item.isActive" type="danger" size="small">已禁用</el-tag>
+              <el-tag v-if="!item.isActive" type="danger" size="small">{{ t('settings.disabled') }}</el-tag>
             </div>
             <div class="template-time">
-              <span class="time-label">工作时间</span>
+              <span class="time-label">{{ t('schedule.workTime') }}</span>
               <span class="time-value">{{ item.startTime }} - {{ item.endTime }}</span>
             </div>
             <div class="template-info">
-              <span>工时: {{ item.workHours }}h</span>
-              <span>休息: {{ item.breakMinutes }}min</span>
+              <span>{{ t('schedule.workHours') }}: {{ item.workHours }}h</span>
+              <span>{{ t('schedule.breakMinutes') }}: {{ item.breakMinutes }}min</span>
             </div>
             <div class="template-actions">
               <el-button link type="primary" size="small" @click="handleEdit(item)">
-                <el-icon><Edit /></el-icon> 编辑
+                <el-icon><Edit /></el-icon> {{ t('common.edit') }}
               </el-button>
               <el-button link type="danger" size="small" @click="handleDelete(item)">
-                <el-icon><Delete /></el-icon> 删除
+                <el-icon><Delete /></el-icon> {{ t('common.delete') }}
               </el-button>
             </div>
           </el-card>
         </el-col>
       </el-row>
       
-      <el-empty v-if="!loading && templates.length === 0" description="暂无班次模板" />
+      <el-empty v-if="!loading && templates.length === 0" :description="t('schedule.noShiftTemplates')" />
     </el-card>
     
     <!-- 编辑对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px">
       <el-form :model="form" label-width="100px">
-        <el-form-item label="班次名称" required>
-          <el-input v-model="form.name" placeholder="如：早班、晚班" />
+        <el-form-item :label="t('schedule.shiftName')" required>
+          <el-input v-model="form.name" :placeholder="t('schedule.shiftNamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="上班时间" required>
+        <el-form-item :label="t('schedule.startTime')" required>
           <el-time-picker v-model="form.startTime" format="HH:mm" value-format="HH:mm" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="下班时间" required>
+        <el-form-item :label="t('schedule.endTime')" required>
           <el-time-picker v-model="form.endTime" format="HH:mm" value-format="HH:mm" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="工作时长">
+        <el-form-item :label="t('schedule.workHours')">
           <el-input-number v-model="form.workHours" :min="1" :max="24" />
-          <span style="margin-left: 8px">小时</span>
+          <span style="margin-left: 8px">{{ t('schedule.hours') }}</span>
         </el-form-item>
-        <el-form-item label="休息时长">
+        <el-form-item :label="t('schedule.breakMinutes')">
           <el-input-number v-model="form.breakMinutes" :min="0" :max="180" :step="15" />
-          <span style="margin-left: 8px">分钟</span>
+          <span style="margin-left: 8px">{{ t('settings.minutes') }}</span>
         </el-form-item>
-        <el-form-item label="状态">
-          <el-switch v-model="form.isActive" active-text="启用" inactive-text="禁用" />
+        <el-form-item :label="t('common.status')">
+          <el-switch v-model="form.isActive" :active-text="t('settings.enabled')" :inactive-text="t('settings.disabled')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
   </div>

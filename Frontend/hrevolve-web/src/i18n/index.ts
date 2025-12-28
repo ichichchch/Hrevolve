@@ -23,23 +23,39 @@ const i18n = createI18n({
 
 /** 从后端加载语言包并合并 */
 export async function loadLocaleMessages(locale: string, messages: Record<string, unknown>) {
-  // 将后端返回的扁平结构转换为前端需要的格式
-  const currentMessages = i18n.global.messages.value[locale as 'zh-CN' | 'zh-TW' | 'en-US'];
+  // 获取当前本地语言包
+  const currentMessages = i18n.global.messages.value[locale as 'zh-CN' | 'zh-TW' | 'en-US'] || {};
   
-  const formattedMessages = {
-    ...messages,
-    // 处理命名差异
-    dashboard: messages.dashboard_page,
-    attendance: { ...(messages.attendance_page as object), ...(currentMessages?.attendance || {}) },
-    leave: { ...(messages.leave_page as object), ...(currentMessages?.leave || {}) },
-    payroll: { ...(messages.payroll_page as object), ...(currentMessages?.payroll || {}) },
-    assistant: messages.assistant_page,
+  // 深度合并函数，本地翻译优先（不会被后端空值覆盖）
+  const deepMerge = (local: Record<string, unknown>, remote: Record<string, unknown>): Record<string, unknown> => {
+    const result = { ...local };
+    for (const key in remote) {
+      if (remote[key] !== null && remote[key] !== undefined && remote[key] !== '') {
+        if (typeof remote[key] === 'object' && !Array.isArray(remote[key])) {
+          // 如果本地有这个键，递归合并；否则使用远程的值
+          if (result[key] && typeof result[key] === 'object') {
+            result[key] = deepMerge(
+              result[key] as Record<string, unknown>,
+              remote[key] as Record<string, unknown>
+            );
+          } else {
+            result[key] = remote[key];
+          }
+        } else {
+          // 只有当本地没有这个键时，才使用远程的值
+          if (!(key in result)) {
+            result[key] = remote[key];
+          }
+        }
+      }
+    }
+    return result;
   };
   
-  i18n.global.setLocaleMessage(locale, {
-    ...currentMessages,
-    ...formattedMessages,
-  });
+  // 合并：本地翻译优先，后端翻译作为补充
+  const mergedMessages = deepMerge(currentMessages as Record<string, unknown>, messages as Record<string, unknown>);
+  
+  i18n.global.setLocaleMessage(locale, mergedMessages);
 }
 
 export default i18n;

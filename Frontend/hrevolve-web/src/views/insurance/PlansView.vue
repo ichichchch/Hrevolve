@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, Edit, Delete } from '@element-plus/icons-vue';
 import { insuranceApi } from '@/api';
 import type { InsurancePlan } from '@/types';
 
+const { t } = useI18n();
 const loading = ref(false);
 const plans = ref<InsurancePlan[]>([]);
 const dialogVisible = ref(false);
@@ -12,14 +14,13 @@ const dialogTitle = ref('');
 const form = ref<Partial<InsurancePlan>>({});
 const saving = ref(false);
 
-// 保险类型
-const planTypes = [
-  { value: 'health', label: '医疗保险' },
-  { value: 'life', label: '人寿保险' },
-  { value: 'accident', label: '意外保险' },
-  { value: 'pension', label: '养老保险' },
-  { value: 'unemployment', label: '失业保险' },
-];
+// 保险类型 - 使用 computed 实现响应式翻译
+const planTypes = computed(() => [
+  { value: 'health', label: t('insurance.typeMedical') },
+  { value: 'life', label: t('insurance.typeLife') },
+  { value: 'accident', label: t('insurance.typeAccident') },
+  { value: 'pension', label: t('insurance.typePension') },
+]);
 
 const fetchData = async () => {
   loading.value = true;
@@ -31,28 +32,28 @@ const fetchData = async () => {
 
 const handleAdd = () => {
   form.value = { type: 'health', isActive: true };
-  dialogTitle.value = '新增保险方案';
+  dialogTitle.value = t('insurance.newPlan');
   dialogVisible.value = true;
 };
 
 const handleEdit = (item: InsurancePlan) => {
   form.value = { ...item };
-  dialogTitle.value = '编辑保险方案';
+  dialogTitle.value = t('insurance.editPlan');
   dialogVisible.value = true;
 };
 
 const handleDelete = async (item: InsurancePlan) => {
-  await ElMessageBox.confirm(`确定删除"${item.name}"吗？`, '提示', { type: 'warning' });
+  await ElMessageBox.confirm(t('expense.confirmDelete', { name: item.name }), t('common.confirm'), { type: 'warning' });
   try {
     await insuranceApi.deleteInsurancePlan(item.id);
-    ElMessage.success('删除成功');
+    ElMessage.success(t('common.success'));
     fetchData();
   } catch { /* ignore */ }
 };
 
 const handleSave = async () => {
   if (!form.value.name || !form.value.type) {
-    ElMessage.warning('请填写必填项');
+    ElMessage.warning(t('tax.fillRequired'));
     return;
   }
   saving.value = true;
@@ -62,13 +63,13 @@ const handleSave = async () => {
     } else {
       await insuranceApi.createInsurancePlan(form.value);
     }
-    ElMessage.success('保存成功');
+    ElMessage.success(t('common.success'));
     dialogVisible.value = false;
     fetchData();
   } catch { /* ignore */ } finally { saving.value = false; }
 };
 
-const getTypeName = (type: string) => planTypes.find(t => t.value === type)?.label || type;
+const getTypeName = (type: string) => planTypes.value.find(t => t.value === type)?.label || type;
 
 onMounted(() => fetchData());
 </script>
@@ -78,8 +79,8 @@ onMounted(() => fetchData());
     <el-card>
       <template #header>
         <div class="card-header">
-          <span class="card-title">保险方案管理</span>
-          <el-button type="primary" :icon="Plus" @click="handleAdd">新增方案</el-button>
+          <span class="card-title">{{ t('insurance.planManagement') }}</span>
+          <el-button type="primary" :icon="Plus" @click="handleAdd">{{ t('insurance.addPlan') }}</el-button>
         </div>
       </template>
       
@@ -88,41 +89,41 @@ onMounted(() => fetchData());
           <el-card class="plan-card" shadow="hover">
             <div class="plan-header">
               <span class="plan-name">{{ item.name }}</span>
-              <el-tag :type="item.isActive ? 'success' : 'danger'" size="small">{{ item.isActive ? '启用' : '禁用' }}</el-tag>
+              <el-tag :type="item.isActive ? 'success' : 'danger'" size="small">{{ item.isActive ? t('settings.enabled') : t('settings.disabled') }}</el-tag>
             </div>
             <div class="plan-type"><el-tag size="small">{{ getTypeName(item.type) }}</el-tag></div>
             <div class="plan-info">
-              <div class="info-item"><span class="label">保费:</span><span class="value">¥{{ item.premium }}/月</span></div>
-              <div class="info-item"><span class="label">保额:</span><span class="value">¥{{ item.coverage?.toLocaleString() }}</span></div>
+              <div class="info-item"><span class="label">{{ t('insurance.premium') }}:</span><span class="value">¥{{ item.premium }}{{ t('insurance.perMonth') }}</span></div>
+              <div class="info-item"><span class="label">{{ t('insurance.coverage') }}:</span><span class="value">¥{{ item.coverage?.toLocaleString() }}</span></div>
             </div>
-            <div class="plan-desc">{{ item.description || '暂无描述' }}</div>
+            <div class="plan-desc">{{ item.description || t('common.noData') }}</div>
             <div class="plan-actions">
-              <el-button link type="primary" size="small" @click="handleEdit(item)"><el-icon><Edit /></el-icon> 编辑</el-button>
-              <el-button link type="danger" size="small" @click="handleDelete(item)"><el-icon><Delete /></el-icon> 删除</el-button>
+              <el-button link type="primary" size="small" @click="handleEdit(item)"><el-icon><Edit /></el-icon> {{ t('common.edit') }}</el-button>
+              <el-button link type="danger" size="small" @click="handleDelete(item)"><el-icon><Delete /></el-icon> {{ t('common.delete') }}</el-button>
             </div>
           </el-card>
         </el-col>
       </el-row>
       
-      <el-empty v-if="!loading && plans.length === 0" description="暂无保险方案" />
+      <el-empty v-if="!loading && plans.length === 0" :description="t('common.noData')" />
     </el-card>
     
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px">
       <el-form :model="form" label-width="80px">
-        <el-form-item label="名称" required><el-input v-model="form.name" placeholder="请输入方案名称" /></el-form-item>
-        <el-form-item label="类型" required>
+        <el-form-item :label="t('insurance.planName')" required><el-input v-model="form.name" /></el-form-item>
+        <el-form-item :label="t('insurance.planType')" required>
           <el-select v-model="form.type" style="width: 100%">
-            <el-option v-for="t in planTypes" :key="t.value" :label="t.label" :value="t.value" />
+            <el-option v-for="pt in planTypes" :key="pt.value" :label="pt.label" :value="pt.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="保费"><el-input-number v-model="form.premium" :min="0" :precision="2" style="width: 100%" /><span style="margin-left: 8px">/月</span></el-form-item>
-        <el-form-item label="保额"><el-input-number v-model="form.coverage" :min="0" style="width: 100%" /></el-form-item>
-        <el-form-item label="描述"><el-input v-model="form.description" type="textarea" :rows="2" /></el-form-item>
-        <el-form-item label="状态"><el-switch v-model="form.isActive" active-text="启用" inactive-text="禁用" /></el-form-item>
+        <el-form-item :label="t('insurance.premium')"><el-input-number v-model="form.premium" :min="0" :precision="2" style="width: 100%" /><span style="margin-left: 8px">{{ t('insurance.perMonth') }}</span></el-form-item>
+        <el-form-item :label="t('insurance.coverage')"><el-input-number v-model="form.coverage" :min="0" style="width: 100%" /></el-form-item>
+        <el-form-item :label="t('settings.description')"><el-input v-model="form.description" type="textarea" :rows="2" /></el-form-item>
+        <el-form-item :label="t('common.status')"><el-switch v-model="form.isActive" :active-text="t('settings.enabled')" :inactive-text="t('settings.disabled')" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
   </div>

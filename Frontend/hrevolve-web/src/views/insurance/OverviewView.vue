@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Document, User, Money, TrendCharts } from '@element-plus/icons-vue';
 import { insuranceApi } from '@/api';
 
+const { t } = useI18n();
 const loading = ref(false);
 const stats = ref({ totalPlans: 0, enrolledEmployees: 0, monthlyPremium: 0, pendingClaims: 0 });
 const recentEnrollments = ref<any[]>([]);
@@ -28,41 +30,41 @@ onMounted(() => fetchData());
       <el-col :xs="12" :sm="6">
         <el-card class="stat-card">
           <div class="stat-icon" style="background: linear-gradient(135deg, #D4AF37, #F4D03F)"><el-icon><Document /></el-icon></div>
-          <div class="stat-info"><div class="stat-value">{{ stats.totalPlans }}</div><div class="stat-label">保险方案</div></div>
+          <div class="stat-info"><div class="stat-value">{{ stats.totalPlans }}</div><div class="stat-label">{{ t('insurance.insurancePlan') }}</div></div>
         </el-card>
       </el-col>
       <el-col :xs="12" :sm="6">
         <el-card class="stat-card">
           <div class="stat-icon" style="background: linear-gradient(135deg, #3498DB, #5DADE2)"><el-icon><User /></el-icon></div>
-          <div class="stat-info"><div class="stat-value">{{ stats.enrolledEmployees }}</div><div class="stat-label">参保人数</div></div>
+          <div class="stat-info"><div class="stat-value">{{ stats.enrolledEmployees }}</div><div class="stat-label">{{ t('menu.employeeInsurance') }}</div></div>
         </el-card>
       </el-col>
       <el-col :xs="12" :sm="6">
         <el-card class="stat-card">
           <div class="stat-icon" style="background: linear-gradient(135deg, #2ECC71, #58D68D)"><el-icon><Money /></el-icon></div>
-          <div class="stat-info"><div class="stat-value">¥{{ stats.monthlyPremium?.toLocaleString() }}</div><div class="stat-label">月度保费</div></div>
+          <div class="stat-info"><div class="stat-value">¥{{ stats.monthlyPremium?.toLocaleString() }}</div><div class="stat-label">{{ t('insurance.premium') }}</div></div>
         </el-card>
       </el-col>
       <el-col :xs="12" :sm="6">
         <el-card class="stat-card">
           <div class="stat-icon" style="background: linear-gradient(135deg, #E74C3C, #EC7063)"><el-icon><TrendCharts /></el-icon></div>
-          <div class="stat-info"><div class="stat-value">{{ stats.pendingClaims }}</div><div class="stat-label">待处理理赔</div></div>
+          <div class="stat-info"><div class="stat-value">{{ stats.pendingClaims }}</div><div class="stat-label">{{ t('dashboard.pendingApprovals') }}</div></div>
         </el-card>
       </el-col>
     </el-row>
     
     <el-card>
-      <template #header><span class="card-title">最近参保记录</span></template>
+      <template #header><span class="card-title">{{ t('insurance.recentEnrollments') }}</span></template>
       <el-table v-loading="loading" :data="recentEnrollments" stripe>
-        <el-table-column prop="employeeName" label="员工" width="120" />
-        <el-table-column prop="planName" label="保险方案" min-width="150" />
-        <el-table-column prop="startDate" label="生效日期" width="120" />
-        <el-table-column prop="premium" label="保费" width="100"><template #default="{ row }">¥{{ row.premium }}</template></el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
-          <template #default="{ row }"><el-tag :type="row.status === 'active' ? 'success' : 'info'" size="small">{{ row.status === 'active' ? '生效中' : '已终止' }}</el-tag></template>
+        <el-table-column prop="employeeName" :label="t('schedule.employee')" width="120" />
+        <el-table-column prop="planName" :label="t('insurance.insurancePlan')" min-width="150" />
+        <el-table-column prop="startDate" :label="t('insurance.effectiveDate')" width="120" />
+        <el-table-column prop="premium" :label="t('insurance.premium')" width="100"><template #default="{ row }">¥{{ row.premium }}</template></el-table-column>
+        <el-table-column prop="status" :label="t('common.status')" width="100">
+          <template #default="{ row }"><el-tag :type="row.status === 'active' ? 'success' : 'info'" size="small">{{ row.status === 'active' ? t('insurance.statusActive') : t('insurance.statusTerminated') }}</el-tag></template>
         </el-table-column>
       </el-table>
-      <el-empty v-if="!loading && recentEnrollments.length === 0" description="暂无参保记录" />
+      <el-empty v-if="!loading && recentEnrollments.length === 0" :description="t('common.noData')" />
     </el-card>
   </div>
 </template>

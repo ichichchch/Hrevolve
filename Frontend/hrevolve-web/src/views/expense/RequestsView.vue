@@ -1,36 +1,50 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, Search, View, Check, Close } from '@element-plus/icons-vue';
 import { expenseApi } from '@/api';
 import type { ExpenseRequest, ExpenseType } from '@/types';
+import dayjs from 'dayjs';
+
+const { t } = useI18n();
 
 const loading = ref(false);
 const requests = ref<ExpenseRequest[]>([]);
 const expenseTypes = ref<ExpenseType[]>([]);
 const dialogVisible = ref(false);
 const detailVisible = ref(false);
-const form = ref<Partial<ExpenseRequest>>({});
 const currentDetail = ref<ExpenseRequest | null>(null);
 const saving = ref(false);
 const searchKeyword = ref('');
 const statusFilter = ref('');
 const pagination = ref({ page: 1, pageSize: 20, total: 0 });
 
-// 状态选项
-const statusOptions = [
-  { value: 'pending', label: '待审批', type: 'warning' },
-  { value: 'approved', label: '已通过', type: 'success' },
-  { value: 'rejected', label: '已拒绝', type: 'danger' },
-  { value: 'paid', label: '已支付', type: 'info' },
-];
+// 表单数据
+const form = ref({
+  expenseTypeId: '',
+  amount: 0,
+  expenseDate: dayjs().format('YYYY-MM-DD'),
+  description: '',
+});
+
+// 状态选项 - 使用 computed 以支持响应式翻译
+const statusOptions = computed(() => [
+  { value: 'Pending', label: t('expense.statusPending'), type: 'warning' },
+  { value: 'Approved', label: t('expense.statusApproved'), type: 'success' },
+  { value: 'Rejected', label: t('expense.statusRejected'), type: 'danger' },
+  { value: 'Paid', label: t('expense.statusPaid'), type: 'info' },
+]);
 
 // 过滤后的数据
 const filteredRequests = computed(() => {
   let result = requests.value;
   if (searchKeyword.value) {
     const keyword = searchKeyword.value.toLowerCase();
-    result = result.filter(r => r.title?.toLowerCase().includes(keyword) || r.employeeName?.toLowerCase().includes(keyword));
+    result = result.filter(r => 
+      r.description?.toLowerCase().includes(keyword) || 
+      r.employeeName?.toLowerCase().includes(keyword)
+    );
   }
   if (statusFilter.value) result = result.filter(r => r.status === statusFilter.value);
   return result;
@@ -52,7 +66,12 @@ const fetchData = async () => {
 
 // 新增
 const handleAdd = () => {
-  form.value = { items: [], status: 'pending' };
+  form.value = {
+    expenseTypeId: '',
+    amount: 0,
+    expenseDate: dayjs().format('YYYY-MM-DD'),
+    description: '',
+  };
   dialogVisible.value = true;
 };
 
@@ -64,33 +83,42 @@ const handleView = (row: ExpenseRequest) => {
 
 // 审批
 const handleApprove = async (row: ExpenseRequest, approved: boolean) => {
-  const action = approved ? '通过' : '拒绝';
-  await ElMessageBox.confirm(`确定${action}该报销申请吗？`, '提示', { type: 'warning' });
+  const action = approved ? t('expense.actionApprove') : t('expense.actionReject');
+  await ElMessageBox.confirm(
+    t('expense.confirmApproval', { action }),
+    t('common.confirm'),
+    { type: 'warning' }
+  );
   try {
     await expenseApi.approveExpenseRequest(row.id, { approved, comment: '' });
-    ElMessage.success(`已${action}`);
+    ElMessage.success(t('expense.approvalSuccess', { action }));
     fetchData();
   } catch { /* ignore */ }
 };
 
 // 保存
 const handleSave = async () => {
-  if (!form.value.title || !form.value.expenseTypeId) {
-    ElMessage.warning('请填写必填项');
+  if (!form.value.description || !form.value.expenseTypeId) {
+    ElMessage.warning(t('expense.validation.fillRequired'));
     return;
   }
   saving.value = true;
   try {
-    await expenseApi.createExpenseRequest(form.value);
-    ElMessage.success('提交成功');
+    await expenseApi.createExpenseRequest({
+      expenseTypeId: form.value.expenseTypeId,
+      amount: form.value.amount,
+      expenseDate: form.value.expenseDate,
+      description: form.value.description,
+    });
+    ElMessage.success(t('expense.submitSuccess'));
     dialogVisible.value = false;
     fetchData();
   } catch { /* ignore */ } finally { saving.value = false; }
 };
 
 // 获取状态
-const getStatusType = (status: string) => statusOptions.find(s => s.value === status)?.type || 'info';
-const getStatusLabel = (status: string) => statusOptions.find(s => s.value === status)?.label || status;
+const getStatusType = (status: string) => statusOptions.value.find(s => s.value === status)?.type || 'info';
+const getStatusLabel = (status: string) => statusOptions.value.find(s => s.value === status)?.label || status;
 const getTypeName = (typeId: string) => expenseTypes.value.find(t => t.id === typeId)?.name || '-';
 
 onMounted(() => fetchData());
@@ -101,38 +129,38 @@ onMounted(() => fetchData());
     <el-card>
       <template #header>
         <div class="card-header">
-          <span class="card-title">报销申请</span>
+          <span class="card-title">{{ t('expense.requestTitle') }}</span>
           <div class="header-actions">
-            <el-input v-model="searchKeyword" placeholder="搜索" :prefix-icon="Search" clearable style="width: 160px" />
-            <el-select v-model="statusFilter" placeholder="状态" clearable style="width: 120px">
+            <el-input v-model="searchKeyword" :placeholder="t('common.search')" :prefix-icon="Search" clearable style="width: 160px" />
+            <el-select v-model="statusFilter" :placeholder="t('common.status')" clearable style="width: 120px">
               <el-option v-for="s in statusOptions" :key="s.value" :label="s.label" :value="s.value" />
             </el-select>
-            <el-button type="primary" :icon="Plus" @click="handleAdd">新增申请</el-button>
+            <el-button type="primary" :icon="Plus" @click="handleAdd">{{ t('expense.addRequest') }}</el-button>
           </div>
         </div>
       </template>
       
       <el-table v-loading="loading" :data="filteredRequests" stripe>
-        <el-table-column prop="title" label="标题" min-width="150" />
-        <el-table-column prop="employeeName" label="申请人" width="100" />
-        <el-table-column prop="expenseTypeId" label="类型" width="100">
+        <el-table-column prop="description" :label="t('expense.title')" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="employeeName" :label="t('expense.applicant')" width="100" />
+        <el-table-column prop="expenseTypeId" :label="t('expense.type')" width="100">
           <template #default="{ row }">{{ getTypeName(row.expenseTypeId) }}</template>
         </el-table-column>
-        <el-table-column prop="totalAmount" label="金额" width="100">
-          <template #default="{ row }">¥{{ row.totalAmount?.toFixed(2) }}</template>
+        <el-table-column prop="amount" :label="t('expense.amount')" width="100">
+          <template #default="{ row }">¥{{ row.amount?.toFixed(2) }}</template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="status" :label="t('common.status')" width="100">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)" size="small">{{ getStatusLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createdAt" label="申请时间" width="160">
+        <el-table-column prop="createdAt" :label="t('expense.applyTime')" width="160">
           <template #default="{ row }">{{ new Date(row.createdAt).toLocaleString() }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column :label="t('common.actions')" width="150" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" size="small" @click="handleView(row)"><el-icon><View /></el-icon></el-button>
-            <template v-if="row.status === 'pending'">
+            <template v-if="row.status === 'Pending'">
               <el-button link type="success" size="small" @click="handleApprove(row, true)"><el-icon><Check /></el-icon></el-button>
               <el-button link type="danger" size="small" @click="handleApprove(row, false)"><el-icon><Close /></el-icon></el-button>
             </template>
@@ -146,33 +174,37 @@ onMounted(() => fetchData());
     </el-card>
     
     <!-- 新增对话框 -->
-    <el-dialog v-model="dialogVisible" title="新增报销申请" width="550px">
+    <el-dialog v-model="dialogVisible" :title="t('expense.addRequestDialog')" width="550px">
       <el-form :model="form" label-width="80px">
-        <el-form-item label="标题" required><el-input v-model="form.title" placeholder="请输入报销标题" /></el-form-item>
-        <el-form-item label="类型" required>
+        <el-form-item :label="t('expense.title')" required>
+          <el-input v-model="form.description" :placeholder="t('expense.placeholder.title')" />
+        </el-form-item>
+        <el-form-item :label="t('expense.type')" required>
           <el-select v-model="form.expenseTypeId" style="width: 100%">
-            <el-option v-for="t in expenseTypes" :key="t.id" :label="t.name" :value="t.id" />
+            <el-option v-for="type in expenseTypes" :key="type.id" :label="type.name" :value="type.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="金额" required><el-input-number v-model="form.totalAmount" :min="0" :precision="2" style="width: 100%" /></el-form-item>
-        <el-form-item label="说明"><el-input v-model="form.description" type="textarea" :rows="3" /></el-form-item>
+        <el-form-item :label="t('expense.amount')" required>
+          <el-input-number v-model="form.amount" :min="0" :precision="2" style="width: 100%" />
+        </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="handleSave">提交</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="handleSave">{{ t('expense.submit') }}</el-button>
       </template>
     </el-dialog>
     
     <!-- 详情对话框 -->
-    <el-dialog v-model="detailVisible" title="报销详情" width="600px">
+    <el-dialog v-model="detailVisible" :title="t('expense.detailDialog')" width="600px">
       <el-descriptions v-if="currentDetail" :column="2" border>
-        <el-descriptions-item label="标题">{{ currentDetail.title }}</el-descriptions-item>
-        <el-descriptions-item label="申请人">{{ currentDetail.employeeName }}</el-descriptions-item>
-        <el-descriptions-item label="类型">{{ getTypeName(currentDetail.expenseTypeId) }}</el-descriptions-item>
-        <el-descriptions-item label="金额">¥{{ currentDetail.totalAmount?.toFixed(2) }}</el-descriptions-item>
-        <el-descriptions-item label="状态"><el-tag :type="getStatusType(currentDetail.status)" size="small">{{ getStatusLabel(currentDetail.status) }}</el-tag></el-descriptions-item>
-        <el-descriptions-item label="申请时间">{{ new Date(currentDetail.createdAt).toLocaleString() }}</el-descriptions-item>
-        <el-descriptions-item label="说明" :span="2">{{ currentDetail.description || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="t('expense.title')">{{ currentDetail.description }}</el-descriptions-item>
+        <el-descriptions-item :label="t('expense.applicant')">{{ currentDetail.employeeName }}</el-descriptions-item>
+        <el-descriptions-item :label="t('expense.type')">{{ getTypeName(currentDetail.expenseTypeId) }}</el-descriptions-item>
+        <el-descriptions-item :label="t('expense.amount')">¥{{ currentDetail.amount?.toFixed(2) }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.status')">
+          <el-tag :type="getStatusType(currentDetail.status)" size="small">{{ getStatusLabel(currentDetail.status) }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item :label="t('expense.applyTime')">{{ new Date(currentDetail.createdAt).toLocaleString() }}</el-descriptions-item>
       </el-descriptions>
     </el-dialog>
   </div>
@@ -180,7 +212,12 @@ onMounted(() => fetchData());
 
 <style scoped lang="scss">
 .expense-requests-view {
-  .card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+  .card-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    flex-wrap: wrap; 
+    gap: 12px;
     .card-title { font-size: 16px; font-weight: 600; }
     .header-actions { display: flex; gap: 12px; }
   }

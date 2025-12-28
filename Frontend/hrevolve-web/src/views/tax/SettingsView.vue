@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { taxApi } from '@/api';
 
+const { t } = useI18n();
 const loading = ref(false);
 const saving = ref(false);
 const settings = ref({
@@ -43,7 +45,7 @@ const handleSave = async () => {
   saving.value = true;
   try {
     await taxApi.updateTaxSettings(settings.value);
-    ElMessage.success('保存成功');
+    ElMessage.success(t('tax.saveSuccess'));
   } catch { /* ignore */ } finally { saving.value = false; }
 };
 
@@ -55,35 +57,35 @@ onMounted(() => fetchData());
     <el-row :gutter="16">
       <el-col :xs="24" :lg="12">
         <el-card>
-          <template #header><span class="card-title">基本设置</span></template>
+          <template #header><span class="card-title">{{ t('tax.basicSettings') }}</span></template>
           <el-form :model="settings" label-width="140px" v-loading="loading">
-            <el-form-item label="税务年度">
+            <el-form-item :label="t('tax.taxYear')">
               <el-input-number v-model="settings.taxYear" :min="2020" :max="2030" />
             </el-form-item>
-            <el-form-item label="基本减除费用">
+            <el-form-item :label="t('tax.basicDeduction')">
               <el-input-number v-model="settings.basicDeduction" :min="0" :step="100" />
-              <span style="margin-left: 8px">/月</span>
+              <span style="margin-left: 8px">{{ t('tax.perMonth') }}</span>
             </el-form-item>
-            <el-form-item label="社保缴纳比例">
+            <el-form-item :label="t('tax.socialInsuranceRate')">
               <el-input-number v-model="settings.socialInsuranceRate" :min="0" :max="1" :precision="3" :step="0.01" />
             </el-form-item>
-            <el-form-item label="公积金缴纳比例">
+            <el-form-item :label="t('tax.housingFundRate')">
               <el-input-number v-model="settings.housingFundRate" :min="0" :max="0.24" :precision="2" :step="0.01" />
             </el-form-item>
           </el-form>
         </el-card>
         
         <el-card style="margin-top: 16px">
-          <template #header><span class="card-title">专项附加扣除标准</span></template>
+          <template #header><span class="card-title">{{ t('tax.specialDeductions') }}</span></template>
           <el-form :model="settings" label-width="140px">
-            <el-form-item label="子女教育"><el-input-number v-model="settings.childEducation" :min="0" :step="100" /><span style="margin-left: 8px">/月/子女</span></el-form-item>
-            <el-form-item label="继续教育"><el-input-number v-model="settings.continuingEducation" :min="0" :step="100" /><span style="margin-left: 8px">/月</span></el-form-item>
-            <el-form-item label="住房贷款利息"><el-input-number v-model="settings.housingLoanInterest" :min="0" :step="100" /><span style="margin-left: 8px">/月</span></el-form-item>
-            <el-form-item label="住房租金"><el-input-number v-model="settings.housingRent" :min="0" :step="100" /><span style="margin-left: 8px">/月</span></el-form-item>
-            <el-form-item label="赡养老人"><el-input-number v-model="settings.elderlySupport" :min="0" :step="100" /><span style="margin-left: 8px">/月</span></el-form-item>
-            <el-form-item label="婴幼儿照护"><el-input-number v-model="settings.infantCare" :min="0" :step="100" /><span style="margin-left: 8px">/月/子女</span></el-form-item>
+            <el-form-item :label="t('tax.childEducation')"><el-input-number v-model="settings.childEducation" :min="0" :step="100" /><span style="margin-left: 8px">{{ t('tax.perMonthPerChild') }}</span></el-form-item>
+            <el-form-item :label="t('tax.continuingEducation')"><el-input-number v-model="settings.continuingEducation" :min="0" :step="100" /><span style="margin-left: 8px">{{ t('tax.perMonth') }}</span></el-form-item>
+            <el-form-item :label="t('tax.housingLoanInterest')"><el-input-number v-model="settings.housingLoanInterest" :min="0" :step="100" /><span style="margin-left: 8px">{{ t('tax.perMonth') }}</span></el-form-item>
+            <el-form-item :label="t('tax.housingRent')"><el-input-number v-model="settings.housingRent" :min="0" :step="100" /><span style="margin-left: 8px">{{ t('tax.perMonth') }}</span></el-form-item>
+            <el-form-item :label="t('tax.elderlySupport')"><el-input-number v-model="settings.elderlySupport" :min="0" :step="100" /><span style="margin-left: 8px">{{ t('tax.perMonth') }}</span></el-form-item>
+            <el-form-item :label="t('tax.infantCare')"><el-input-number v-model="settings.infantCare" :min="0" :step="100" /><span style="margin-left: 8px">{{ t('tax.perMonthPerChild') }}</span></el-form-item>
             <el-form-item>
-              <el-button type="primary" :loading="saving" @click="handleSave">保存设置</el-button>
+              <el-button type="primary" :loading="saving" @click="handleSave">{{ t('tax.saveSettings') }}</el-button>
             </el-form-item>
           </el-form>
         </el-card>
@@ -91,23 +93,23 @@ onMounted(() => fetchData());
       
       <el-col :xs="24" :lg="12">
         <el-card>
-          <template #header><span class="card-title">个人所得税税率表（综合所得）</span></template>
+          <template #header><span class="card-title">{{ t('tax.taxRateTable') }}</span></template>
           <el-table :data="taxBrackets" stripe>
-            <el-table-column label="级数" width="60" type="index" :index="(i: number) => i + 1" />
-            <el-table-column label="全年应纳税所得额" min-width="180">
+            <el-table-column :label="t('tax.level')" width="60" type="index" :index="(i: number) => i + 1" />
+            <el-table-column :label="t('tax.annualTaxableIncome')" min-width="180">
               <template #default="{ row }">
-                {{ row.max === Infinity ? `超过${row.min.toLocaleString()}元` : `${row.min.toLocaleString()} - ${row.max.toLocaleString()}元` }}
+                {{ row.max === Infinity ? t('tax.exceedAmount', { amount: row.min.toLocaleString() }) : `${row.min.toLocaleString()} - ${row.max.toLocaleString()}元` }}
               </template>
             </el-table-column>
-            <el-table-column prop="rate" label="税率" width="80">
+            <el-table-column prop="rate" :label="t('tax.taxRate')" width="80">
               <template #default="{ row }">{{ (row.rate * 100).toFixed(0) }}%</template>
             </el-table-column>
-            <el-table-column prop="deduction" label="速算扣除数" width="100">
+            <el-table-column prop="deduction" :label="t('tax.quickDeduction')" width="100">
               <template #default="{ row }">{{ row.deduction.toLocaleString() }}</template>
             </el-table-column>
           </el-table>
           <div class="tax-note">
-            <p>注：本表所称全年应纳税所得额是指依照税法规定，居民个人取得综合所得以每一纳税年度收入额减除费用六万元以及专项扣除、专项附加扣除和依法确定的其他扣除后的余额。</p>
+            <p>{{ t('tax.taxNote') }}</p>
           </div>
         </el-card>
       </el-col>

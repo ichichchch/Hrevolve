@@ -51,9 +51,9 @@ onMounted(() => { fetchRecords(); });
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>薪资记录</span>
+          <span>{{ t('payroll.records') }}</span>
           <el-select v-model="selectedYear" @change="fetchRecords" style="width: 120px">
-            <el-option v-for="y in [2024, 2025]" :key="y" :label="`${y}年`" :value="y" />
+            <el-option v-for="y in [2024, 2025]" :key="y" :label="t('payroll.yearLabel', { year: y })" :value="y" />
           </el-select>
         </div>
       </template>
@@ -65,7 +65,7 @@ onMounted(() => { fetchRecords(); });
         <el-table-column prop="bonus" :label="t('payroll.bonus')" width="100">
           <template #default="{ row }">{{ formatMoney(row.bonus) }}</template>
         </el-table-column>
-        <el-table-column prop="deductions" label="扣款" width="100">
+        <el-table-column prop="deductions" :label="t('payroll.deductions')" width="100">
           <template #default="{ row }">{{ formatMoney(row.deductions) }}</template>
         </el-table-column>
         <el-table-column prop="tax" :label="t('payroll.tax')" width="100">
@@ -83,12 +83,12 @@ onMounted(() => { fetchRecords(); });
         </el-table-column>
         <el-table-column :label="t('common.actions')" width="80">
           <template #default="{ row }">
-            <el-button text type="primary" size="small" @click="showDetail(row)">详情</el-button>
+            <el-button text type="primary" size="small" @click="showDetail(row)">{{ t('payroll.detail') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
-    <el-dialog v-model="detailVisible" title="薪资详情" width="500px">
+    <el-dialog v-model="detailVisible" :title="t('payroll.detailDialog')" width="500px">
       <el-descriptions v-if="selectedRecord" :column="1" border>
         <el-descriptions-item :label="t('payroll.baseSalary')">{{ formatMoney(selectedRecord.baseSalary) }}</el-descriptions-item>
         <el-descriptions-item :label="t('payroll.bonus')">{{ formatMoney(selectedRecord.bonus) }}</el-descriptions-item>

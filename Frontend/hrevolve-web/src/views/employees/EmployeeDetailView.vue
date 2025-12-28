@@ -48,7 +48,7 @@ onMounted(() => fetchEmployee());
         <el-descriptions-item :label="t('employee.hireDate')">{{ formatDate(employee.hireDate) }}</el-descriptions-item>
         <el-descriptions-item :label="t('employee.manager')">{{ employee.managerName || '-' }}</el-descriptions-item>
       </el-descriptions>
-      <h3 style="margin-top: 24px">职位历史</h3>
+      <h3 style="margin-top: 24px">{{ t('profile.jobHistory') }}</h3>
       <el-timeline>
         <el-timeline-item v-for="item in jobHistory" :key="item.id" :timestamp="formatDate(item.effectiveStartDate)">
           <strong>{{ item.positionName }}</strong> - {{ item.departmentName }}

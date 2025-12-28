@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, Edit, Delete, Search } from '@element-plus/icons-vue';
 import { companyApi } from '@/api';
 import type { Tag } from '@/types';
+
+const { t } = useI18n();
 
 // 状态
 const loading = ref(false);
@@ -34,7 +37,7 @@ const filteredTags = computed(() => {
 const groupedTags = computed(() => {
   const groups: Record<string, Tag[]> = {};
   filteredTags.value.forEach(tag => {
-    const category = tag.category || '未分类';
+    const category = tag.category || t('tags.uncategorized');
     if (!groups[category]) groups[category] = [];
     groups[category].push(tag);
   });
@@ -55,23 +58,23 @@ onMounted(() => fetchData());
 // 新增标签
 const handleAdd = () => {
   form.value = { color: presetColors[0], isActive: true };
-  dialogTitle.value = '新增标签';
+  dialogTitle.value = t('tags.addTag');
   dialogVisible.value = true;
 };
 
 // 编辑标签
 const handleEdit = (tag: Tag) => {
   form.value = { ...tag };
-  dialogTitle.value = '编辑标签';
+  dialogTitle.value = t('tags.editTag');
   dialogVisible.value = true;
 };
 
 // 删除标签
 const handleDelete = async (tag: Tag) => {
-  await ElMessageBox.confirm(`确定删除标签"${tag.name}"吗？`, '提示', { type: 'warning' });
+  await ElMessageBox.confirm(t('tags.confirmDelete', { name: tag.name }), t('assistantExtra.tip'), { type: 'warning' });
   try {
     await companyApi.deleteTag(tag.id);
-    ElMessage.success('删除成功');
+    ElMessage.success(t('common.success'));
     fetchData();
   } catch { /* ignore */ }
 };
@@ -79,7 +82,7 @@ const handleDelete = async (tag: Tag) => {
 // 保存
 const handleSave = async () => {
   if (!form.value.name) {
-    ElMessage.warning('请输入标签名称');
+    ElMessage.warning(t('tags.enterName'));
     return;
   }
   saving.value = true;
@@ -89,13 +92,11 @@ const handleSave = async () => {
     } else {
       await companyApi.createTag(form.value);
     }
-    ElMessage.success('保存成功');
+    ElMessage.success(t('common.success'));
     dialogVisible.value = false;
     fetchData();
   } catch { /* ignore */ } finally { saving.value = false; }
 };
-
-onMounted(() => fetchData());
 </script>
 
 <template>
@@ -103,16 +104,16 @@ onMounted(() => fetchData());
     <el-card>
       <template #header>
         <div class="card-header">
-          <span class="card-title">标签管理</span>
+          <span class="card-title">{{ t('tags.management') }}</span>
           <div class="header-actions">
             <el-input
               v-model="searchKeyword"
-              placeholder="搜索标签"
+              :placeholder="t('tags.searchPlaceholder')"
               :prefix-icon="Search"
               clearable
               style="width: 200px"
             />
-            <el-button type="primary" :icon="Plus" @click="handleAdd">新增标签</el-button>
+            <el-button type="primary" :icon="Plus" @click="handleAdd">{{ t('tags.addTag') }}</el-button>
           </div>
         </div>
       </template>
@@ -143,20 +144,20 @@ onMounted(() => fetchData());
             </div>
           </div>
         </template>
-        <el-empty v-else description="暂无标签数据" />
+        <el-empty v-else :description="t('tags.noData')" />
       </div>
     </el-card>
     
     <!-- 编辑对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="450px">
       <el-form :model="form" label-width="80px">
-        <el-form-item label="名称" required>
-          <el-input v-model="form.name" placeholder="请输入标签名称" />
+        <el-form-item :label="t('tags.name')" required>
+          <el-input v-model="form.name" :placeholder="t('tags.enterName')" />
         </el-form-item>
-        <el-form-item label="分类">
-          <el-input v-model="form.category" placeholder="请输入分类（可选）" />
+        <el-form-item :label="t('tags.category')">
+          <el-input v-model="form.category" :placeholder="t('tags.categoryPlaceholder')" />
         </el-form-item>
-        <el-form-item label="颜色">
+        <el-form-item :label="t('tags.color')">
           <div class="color-picker">
             <div
               v-for="color in presetColors"
@@ -169,16 +170,16 @@ onMounted(() => fetchData());
             <el-color-picker v-model="form.color" />
           </div>
         </el-form-item>
-        <el-form-item label="描述">
+        <el-form-item :label="t('tags.description')">
           <el-input v-model="form.description" type="textarea" :rows="2" />
         </el-form-item>
-        <el-form-item label="状态">
-          <el-switch v-model="form.isActive" active-text="启用" inactive-text="禁用" />
+        <el-form-item :label="t('common.status')">
+          <el-switch v-model="form.isActive" :active-text="t('settings.enabled')" :inactive-text="t('settings.disabled')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
   </div>

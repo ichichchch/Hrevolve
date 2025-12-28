@@ -57,6 +57,12 @@ const getStatusType = (status: string) => {
   return types[status] || 'info';
 };
 
+// 获取性别显示文本
+const getGenderText = (gender: string | undefined) => {
+  if (!gender) return '-';
+  return t(`employee.gender${gender}`);
+};
+
 onMounted(() => {
   fetchEmployee();
   fetchJobHistory();
@@ -75,7 +81,7 @@ onMounted(() => {
           <h2>{{ employee?.fullName }}</h2>
           <p>{{ employee?.positionName }} · {{ employee?.departmentName }}</p>
           <el-tag :type="getStatusType(employee?.status || '')">
-            {{ t(`employee.status${employee?.status}`) }}
+            {{ employee?.status ? t(`employee.status${employee.status}`) : '-' }}
           </el-tag>
         </div>
       </div>
@@ -84,7 +90,7 @@ onMounted(() => {
       
       <!-- 标签页 -->
       <el-tabs v-model="activeTab">
-        <el-tab-pane label="基本信息" name="basic">
+        <el-tab-pane :label="t('profile.basicInfo')" name="basic">
           <el-descriptions :column="2" border>
             <el-descriptions-item :label="t('employee.employeeNo')">
               {{ employee?.employeeNo }}
@@ -95,10 +101,10 @@ onMounted(() => {
             <el-descriptions-item :label="t('employee.phone')">
               {{ employee?.phone || '-' }}
             </el-descriptions-item>
-            <el-descriptions-item label="性别">
-              {{ employee?.gender === 'Male' ? '男' : employee?.gender === 'Female' ? '女' : '其他' }}
+            <el-descriptions-item :label="t('employee.gender')">
+              {{ getGenderText(employee?.gender) }}
             </el-descriptions-item>
-            <el-descriptions-item label="出生日期">
+            <el-descriptions-item :label="t('employee.birthDate')">
               {{ employee?.birthDate ? formatDate(employee.birthDate) : '-' }}
             </el-descriptions-item>
             <el-descriptions-item :label="t('employee.hireDate')">
@@ -116,7 +122,7 @@ onMounted(() => {
           </el-descriptions>
         </el-tab-pane>
         
-        <el-tab-pane label="职位历史" name="history">
+        <el-tab-pane :label="t('profile.jobHistory')" name="history">
           <el-timeline>
             <el-timeline-item
               v-for="item in jobHistory"
@@ -128,20 +134,20 @@ onMounted(() => {
                 <h4>{{ item.positionName }}</h4>
                 <p>{{ item.departmentName }}</p>
                 <p class="history-detail">
-                  <span>生效日期: {{ formatDate(item.effectiveStartDate) }}</span>
+                  <span>{{ t('profile.effectiveDate') }}: {{ formatDate(item.effectiveStartDate) }}</span>
                   <span v-if="item.effectiveEndDate !== '9999-12-31'">
                     ~ {{ formatDate(item.effectiveEndDate) }}
                   </span>
-                  <span v-else>至今</span>
+                  <span v-else>{{ t('profile.toPresent') }}</span>
                 </p>
                 <p v-if="item.changeReason" class="history-reason">
-                  变更原因: {{ item.changeReason }}
+                  {{ t('profile.changeReason') }}: {{ item.changeReason }}
                 </p>
               </el-card>
             </el-timeline-item>
           </el-timeline>
           
-          <el-empty v-if="jobHistory.length === 0" description="暂无职位历史" />
+          <el-empty v-if="jobHistory.length === 0" :description="t('profile.noJobHistory')" />
         </el-tab-pane>
       </el-tabs>
     </el-card>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { shallowRef, markRaw } from 'vue';
+import { computed, markRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import {
@@ -10,17 +10,36 @@ import {
 } from '@element-plus/icons-vue';
 import { useAuthStore } from '@/stores';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 
-// 统计卡片数据 - 使用 shallowRef 避免深度响应式转换组件
-const stats = shallowRef([
-  { title: t('dashboard.todayAttendance'), value: '--', icon: markRaw(Clock), color: '#D4AF37' },
-  { title: t('dashboard.leaveBalance'), value: '--', icon: markRaw(Calendar), color: '#52c41a' },
-  { title: t('dashboard.pendingApprovals'), value: '3', icon: markRaw(Document), color: '#faad14' },
-  { title: t('dashboard.teamMembers'), value: '12', icon: markRaw(User), color: '#722ed1' },
+// 统计卡片数据 - 使用 computed 确保语言切换时更新
+const stats = computed(() => [
+  { titleKey: 'dashboard.todayAttendance', value: '--', icon: markRaw(Clock), color: '#D4AF37' },
+  { titleKey: 'dashboard.leaveBalance', value: '--', icon: markRaw(Calendar), color: '#52c41a' },
+  { titleKey: 'dashboard.pendingApprovals', value: '3', icon: markRaw(Document), color: '#faad14' },
+  { titleKey: 'dashboard.teamMembers', value: '12', icon: markRaw(User), color: '#722ed1' },
 ]);
+
+// 快捷入口数据
+const quickLinks = computed(() => [
+  { titleKey: 'dashboard.quickLinks.leaveRequest', route: '/self-service/leave', icon: markRaw(Calendar), color: '#D4AF37' },
+  { titleKey: 'dashboard.quickLinks.attendance', route: '/self-service/attendance', icon: markRaw(Clock), color: '#52c41a' },
+  { titleKey: 'dashboard.quickLinks.payroll', route: '/self-service/payroll', icon: markRaw(Document), color: '#faad14' },
+  { titleKey: 'dashboard.quickLinks.assistant', route: '/assistant', icon: markRaw(User), color: '#722ed1' },
+]);
+
+// 格式化日期，根据当前语言
+const formattedDate = computed(() => {
+  const dateLocale = locale.value === 'en-US' ? 'en-US' : 'zh-CN';
+  return new Date().toLocaleDateString(dateLocale, { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+});
 </script>
 
 <template>
@@ -30,7 +49,7 @@ const stats = shallowRef([
       <div class="welcome-content">
         <div class="welcome-text">
           <h1>{{ t('dashboard.welcome') }}，{{ authStore.user?.username || 'User' }} 👋</h1>
-          <p>{{ new Date().toLocaleDateString('zh-CN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</p>
+          <p>{{ formattedDate }}</p>
         </div>
       </div>
       
@@ -43,11 +62,11 @@ const stats = shallowRef([
     
     <!-- 统计卡片 -->
     <el-row :gutter="24" class="stats-row">
-      <el-col v-for="(stat, index) in stats" :key="stat.title" :xs="24" :sm="12" :lg="6">
+      <el-col v-for="(stat, index) in stats" :key="stat.titleKey" :xs="24" :sm="12" :lg="6">
         <div class="stat-card" :style="{ '--delay': index * 0.1 + 's' }">
           <div class="stat-content">
             <div class="stat-info">
-              <p class="stat-title">{{ stat.title }}</p>
+              <p class="stat-title">{{ t(stat.titleKey) }}</p>
               <p class="stat-value">{{ stat.value }}</p>
             </div>
             <div class="stat-icon" :style="{ '--icon-color': stat.color }">
@@ -63,33 +82,20 @@ const stats = shallowRef([
       <el-col :span="24">
         <div class="content-card">
           <div class="card-header">
-            <span class="card-title">快捷入口</span>
+            <span class="card-title">{{ t('dashboard.quickEntry') }}</span>
           </div>
           
           <div class="quick-links">
-            <div class="quick-link" @click="router.push('/self-service/leave')">
-              <div class="link-icon" style="--link-color: #D4AF37">
-                <el-icon :size="28"><Calendar /></el-icon>
+            <div 
+              v-for="link in quickLinks" 
+              :key="link.titleKey" 
+              class="quick-link" 
+              @click="router.push(link.route)"
+            >
+              <div class="link-icon" :style="{ '--link-color': link.color }">
+                <el-icon :size="28"><component :is="link.icon" /></el-icon>
               </div>
-              <span>请假申请</span>
-            </div>
-            <div class="quick-link" @click="router.push('/self-service/attendance')">
-              <div class="link-icon" style="--link-color: #52c41a">
-                <el-icon :size="28"><Clock /></el-icon>
-              </div>
-              <span>考勤记录</span>
-            </div>
-            <div class="quick-link" @click="router.push('/self-service/payroll')">
-              <div class="link-icon" style="--link-color: #faad14">
-                <el-icon :size="28"><Document /></el-icon>
-              </div>
-              <span>薪资查询</span>
-            </div>
-            <div class="quick-link" @click="router.push('/assistant')">
-              <div class="link-icon" style="--link-color: #722ed1">
-                <el-icon :size="28"><User /></el-icon>
-              </div>
-              <span>AI助手</span>
+              <span>{{ t(link.titleKey) }}</span>
             </div>
           </div>
         </div>

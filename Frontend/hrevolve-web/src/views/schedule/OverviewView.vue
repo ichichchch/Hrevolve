@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Calendar, Clock, User, TrendCharts } from '@element-plus/icons-vue';
 import { scheduleApi } from '@/api';
+
+const { t } = useI18n();
 
 // 统计数据
 const stats = ref({
@@ -19,10 +22,10 @@ const fetchData = async () => {
   try {
     const [statsRes, schedulesRes] = await Promise.all([
       scheduleApi.getScheduleStats(),
-      scheduleApi.getSchedules({ date: new Date().toISOString().split('T')[0] })
+      scheduleApi.getSchedules({ page: 1, pageSize: 10, startDate: new Date().toISOString().split('T')[0], endDate: new Date().toISOString().split('T')[0] })
     ]);
     stats.value = statsRes.data;
-    todaySchedules.value = schedulesRes.data.slice(0, 10);
+    todaySchedules.value = (schedulesRes.data.items || schedulesRes.data).slice(0, 10);
   } catch { /* ignore */ } finally { loading.value = false; }
 };
 
@@ -40,7 +43,7 @@ onMounted(() => fetchData());
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ stats.totalEmployees }}</div>
-            <div class="stat-label">总员工数</div>
+            <div class="stat-label">{{ t('schedule.totalEmployees') }}</div>
           </div>
         </el-card>
       </el-col>
@@ -51,7 +54,7 @@ onMounted(() => fetchData());
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ stats.scheduledToday }}</div>
-            <div class="stat-label">今日排班</div>
+            <div class="stat-label">{{ t('schedule.scheduledToday') }}</div>
           </div>
         </el-card>
       </el-col>
@@ -62,7 +65,7 @@ onMounted(() => fetchData());
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ stats.onDuty }}</div>
-            <div class="stat-label">在岗人数</div>
+            <div class="stat-label">{{ t('schedule.onDuty') }}</div>
           </div>
         </el-card>
       </el-col>
@@ -73,7 +76,7 @@ onMounted(() => fetchData());
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ stats.pendingApprovals }}</div>
-            <div class="stat-label">待审批</div>
+            <div class="stat-label">{{ t('schedule.pendingApprovals') }}</div>
           </div>
         </el-card>
       </el-col>
@@ -82,23 +85,23 @@ onMounted(() => fetchData());
     <!-- 今日排班列表 -->
     <el-card class="today-schedules">
       <template #header>
-        <span class="card-title">今日排班</span>
+        <span class="card-title">{{ t('schedule.todaySchedule') }}</span>
       </template>
       <el-table v-loading="loading" :data="todaySchedules" stripe>
-        <el-table-column prop="employeeName" label="员工" width="120" />
-        <el-table-column prop="departmentName" label="部门" width="120" />
-        <el-table-column prop="shiftName" label="班次" width="100" />
-        <el-table-column prop="startTime" label="上班时间" width="100" />
-        <el-table-column prop="endTime" label="下班时间" width="100" />
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="employeeName" :label="t('schedule.employee')" width="120" />
+        <el-table-column prop="departmentName" :label="t('employee.department')" width="120" />
+        <el-table-column prop="shiftName" :label="t('schedule.shift')" width="100" />
+        <el-table-column prop="startTime" :label="t('schedule.startTime')" width="100" />
+        <el-table-column prop="endTime" :label="t('schedule.endTime')" width="100" />
+        <el-table-column prop="status" :label="t('common.status')" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 'checked_in' ? 'success' : 'info'" size="small">
-              {{ row.status === 'checked_in' ? '已签到' : '未签到' }}
+              {{ row.status === 'checked_in' ? t('schedule.checkedIn') : t('schedule.notCheckedIn') }}
             </el-tag>
           </template>
         </el-table-column>
       </el-table>
-      <el-empty v-if="!loading && todaySchedules.length === 0" description="今日暂无排班" />
+      <el-empty v-if="!loading && todaySchedules.length === 0" :description="t('schedule.noScheduleToday')" />
     </el-card>
   </div>
 </template>
